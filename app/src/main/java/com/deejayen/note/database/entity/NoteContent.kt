@@ -21,8 +21,8 @@ enum class NoteType {
 @TypeConverters(NoteTypeConverter::class)
 
 data class NoteContent(
-    @PrimaryKey val noteDetailId: Int? = null,
-    val noteId: Int,
+    @PrimaryKey val noteDetailId: Long? = null,
+    val noteId: Long,
     val type: NoteType,
     val value: String,
 )
