@@ -6,11 +6,7 @@ import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.deejayen.note.database.NoteDatabase
-import com.deejayen.note.database.NoteWithDetails
 import com.deejayen.note.database.dao.NoteDao
-import com.deejayen.note.database.entity.Note
-import com.deejayen.note.database.entity.NoteDetail
-import com.deejayen.note.database.entity.NoteType
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runTest
 import org.junit.After
@@ -72,7 +68,7 @@ class NoteDaoTest {
 //        }.join()
 //
 //        // Read
-//        var loadedNote: NoteWithDetails? = null
+//        var loadedNote: NoteWithDetail? = null
 //        launch {
 //            loadedNote = noteDao.getNoteWithContentById(noteId.toInt())
 //        }.join()
@@ -95,7 +91,7 @@ class NoteDaoTest {
 //        val noteDetail = NoteDetail(noteId = noteId, type = NoteType.TEXT, value = oldContentStr)
 //        noteDao.insertNoteDetail(noteDetail)
 //
-////        val updatedContent = noteDao.getAllNotesWithContent(). ?.firstOrNull()?.noteDetailList?.firstOrNull()?.copy(value = updatedContentStr)
+////        val updatedContent = noteDao.getAllNoteWithDetails(). ?.firstOrNull()?.noteDetailList?.firstOrNull()?.copy(value = updatedContentStr)
 ////        updatedContent?.let { noteDao.updateNoteContent(it) }
 ////
 ////        val loadedContent = noteDao.getAllNotes()?.firstOrNull()?.noteDetailList?.firstOrNull()
@@ -113,14 +109,14 @@ class NoteDaoTest {
 //
 //        // Delete
 //        launch {
-//            val contentToDelete = noteDao.getAllNotesWithContent().firstOrNull()?.noteDetailList?.firstOrNull()
+//            val contentToDelete = noteDao.getAllNoteWithDetails().firstOrNull()?.noteDetailList?.firstOrNull()
 //            contentToDelete?.let { noteDao.deleteNoteDetail(it) }
 //        }.join()
 //
 //        // Assert
-//        var loadedContent:List<NoteWithDetails>? = null
+//        var loadedContent:List<NoteWithDetail>? = null
 //        launch {
-//            loadedContent = noteDao.getAllNotesWithContent()
+//            loadedContent = noteDao.getAllNoteWithDetails()
 //        }.join()
 //
 //        assertTrue(loadedContent?.isEmpty() ?: false)

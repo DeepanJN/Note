@@ -7,7 +7,7 @@ import androidx.room.TypeConverters
 import com.deejayen.note.database.converter.NoteTypeConverter
 
 enum class NoteType {
-    TEXT, IMAGE,
+    TEXT, IMAGE, NOT_DEFINED
 }
 
 @Entity(
@@ -19,11 +19,10 @@ enum class NoteType {
     )]
 )
 @TypeConverters(NoteTypeConverter::class)
-
 data class NoteDetail(
-    @PrimaryKey var noteDetailId: Long? = null,
-    var noteId: Long? = null,
-    var type: NoteType? = null,
+    @PrimaryKey(autoGenerate = true) var noteDetailId: Long = 0L,
+    var noteId: Long = 0L,
+    var type: NoteType = NoteType.NOT_DEFINED,
     var value: String? = null,
 )
 

@@ -7,6 +7,6 @@ import androidx.room.PrimaryKey
 
 @Entity
 data class Note(
-    @PrimaryKey var noteId: Long? = null,
+    @PrimaryKey(autoGenerate = true) var noteId: Long = 0L,
     var title: String? = null,
 )
