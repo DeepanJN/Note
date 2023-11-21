@@ -20,10 +20,10 @@ enum class NoteType {
 )
 @TypeConverters(NoteTypeConverter::class)
 
-data class NoteContent(
-    @PrimaryKey val noteDetailId: Long? = null,
-    val noteId: Long,
-    val type: NoteType,
-    val value: String,
+data class NoteDetail(
+    @PrimaryKey var noteDetailId: Long? = null,
+    var noteId: Long? = null,
+    var type: NoteType? = null,
+    var value: String? = null,
 )
 

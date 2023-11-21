@@ -1,0 +1,21 @@
+package com.deejayen.note.ui.noteList
+
+import androidx.lifecycle.ViewModelProvider
+import com.deejayen.note.di.ViewModelProviderFactory
+import com.deejayen.note.repository.NoteRepository
+import dagger.Module
+import dagger.Provides
+
+@Module
+class NoteListActivityModule {
+
+    @Provides
+    fun provideNoteListViewModel(noteRepository: NoteRepository): NoteListViewModel = NoteListViewModel(noteRepository)
+
+
+    @Provides
+    fun provideAboutViewModelFactory(noteListViewModel: NoteListViewModel):
+            ViewModelProvider.Factory = ViewModelProviderFactory(noteListViewModel)
+
+}
+
