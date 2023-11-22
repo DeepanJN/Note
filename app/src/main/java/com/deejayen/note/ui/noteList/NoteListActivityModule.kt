@@ -1,5 +1,6 @@
 package com.deejayen.note.ui.noteList
 
+import android.content.Context
 import androidx.lifecycle.ViewModelProvider
 import com.deejayen.note.di.ViewModelProviderFactory
 import com.deejayen.note.repository.NoteRepository
@@ -16,6 +17,10 @@ class NoteListActivityModule {
     @Provides
     fun provideAboutViewModelFactory(noteListViewModel: NoteListViewModel):
             ViewModelProvider.Factory = ViewModelProviderFactory(noteListViewModel)
+
+    @Provides
+    fun provideNoteListRecyclerAdapter():
+            NoteListRecyclerAdapter = NoteListRecyclerAdapter()
 
 }
 
