@@ -3,14 +3,14 @@ package com.deejayen.note.ui.noteList
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import com.deejayen.note.R
 import com.deejayen.note.database.NoteWithDetail
 import com.deejayen.note.databinding.ItemNoteListBinding
+import com.deejayen.note.util.MockDataUtil
 
 
 class NoteListRecyclerAdapter : RecyclerView.Adapter<NoteListRecyclerAdapter.ViewHolder>() {
 
-    val noteWithDetailList: ArrayList<NoteWithDetail> = ArrayList()
+    val noteWithDetailList: ArrayList<NoteWithDetail> = arrayListOf(MockDataUtil.getMockNoteWithDetail())
     var callback: NoteListListener? = null
 
     interface NoteListListener {
@@ -39,10 +39,7 @@ class NoteListRecyclerAdapter : RecyclerView.Adapter<NoteListRecyclerAdapter.Vie
 
     inner class ViewHolder(val binding: ItemNoteListBinding) : RecyclerView.ViewHolder(binding.root) {
         fun renderView(noteWithDetail: NoteWithDetail) {
-
             binding.itemNoteListTitleTv.text = noteWithDetail.note.title ?: ""
-
         }
-
     }
 }

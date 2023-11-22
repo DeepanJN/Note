@@ -1,5 +1,7 @@
 package com.deejayen.note.di
 
+import com.deejayen.note.ui.noteDetail.NoteDetailActivity
+import com.deejayen.note.ui.noteDetail.NoteDetailActivityModule
 import com.deejayen.note.ui.noteList.NoteListActivity
 import com.deejayen.note.ui.noteList.NoteListActivityModule
 import com.deejayen.note.ui.noteList.NoteListViewModel
@@ -11,5 +13,8 @@ abstract class ActivityBuilder {
 
     @ContributesAndroidInjector(modules = [NoteListActivityModule::class])
     abstract fun bindNoteListActivity(): NoteListActivity
+
+    @ContributesAndroidInjector(modules = [NoteDetailActivityModule::class])
+    abstract fun bindNoteDetailActivity(): NoteDetailActivity
 
 }

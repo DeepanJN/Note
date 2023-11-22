@@ -15,7 +15,7 @@ class NoteListActivityModule {
 
 
     @Provides
-    fun provideAboutViewModelFactory(noteListViewModel: NoteListViewModel):
+    fun provideNoteListViewModelFactory(noteListViewModel: NoteListViewModel):
             ViewModelProvider.Factory = ViewModelProviderFactory(noteListViewModel)
 
     @Provides

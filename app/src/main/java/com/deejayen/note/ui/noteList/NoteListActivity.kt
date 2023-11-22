@@ -1,17 +1,14 @@
 package com.deejayen.note.ui.noteList
 
+import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.deejayen.note.R
 import com.deejayen.note.database.NoteWithDetail
-import com.deejayen.note.database.entity.Note
-import com.deejayen.note.database.entity.NoteDetail
-import com.deejayen.note.database.entity.NoteType
 import com.deejayen.note.databinding.ActivityNoteListBinding
+import com.deejayen.note.ui.noteDetail.NoteDetailActivity
 import com.deejayen.note.util.MockDataUtil
 import dagger.android.support.DaggerAppCompatActivity
 import kotlinx.coroutines.Dispatchers
@@ -35,9 +32,8 @@ class NoteListActivity : DaggerAppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        setContentView(R.layout.activity_note_list)
-
         binding = ActivityNoteListBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
         noteListViewModel = ViewModelProvider(this, viewModelFactory)[NoteListViewModel::class.java]
 
@@ -53,21 +49,22 @@ class NoteListActivity : DaggerAppCompatActivity() {
 
     private fun setupClickListeners() {
         binding.addNoteFab.setOnClickListener {
-
+            val intent = Intent(this, NoteDetailActivity::class.java)
+            startActivity(intent)
         }
     }
 
     private fun observerNoteListLivedata() {
         noteListViewModel.notesWithDetailsList.observe(this) {
             if (it != null) {
-                if (it.isNotEmpty()){
+                if (it.isNotEmpty()) {
                     noteListRecyclerAdapter.setNoteWithDetailList(it as ArrayList<NoteWithDetail>)
                 }
             }
         }
     }
 
-    private fun addData() {
+    private fun addNewNote() {
         lifecycleScope.launch(Dispatchers.IO) {
             noteListViewModel.insertOrUpdateNoteWithDetailList(arrayListOf(MockDataUtil.getMockNoteWithDetail()))
 
@@ -81,7 +78,8 @@ class NoteListActivity : DaggerAppCompatActivity() {
 
         noteListRecyclerAdapter.callback = object : (NoteListRecyclerAdapter.NoteListListener) {
             override fun onClickNote(noteWithDetail: NoteWithDetail) {
-                //Intent to detail activity
+                val intent = Intent(this@NoteListActivity, NoteDetailActivity::class.java)
+                startActivity(intent)
             }
         }
     }
