@@ -76,7 +76,7 @@ class NoteDetailActivity : DaggerAppCompatActivity() {
     private fun renderUi() {
         noteDetailViewModel.selectedNoteWithDetail?.let { noteWithDetail ->
             val note = noteWithDetail.note
-            val noteDetail = noteWithDetail.noteDetailList.filter { it.type == NoteType.TEXT }.firstOrNull()
+            val noteDetail = noteWithDetail.noteDetailList.firstOrNull { it.type == NoteType.TEXT }
             binding.noteDetailHeadingTextView.setText(note.title ?: "")
             binding.noteDetailContentEditText.setText(noteDetail?.value ?: "")
         }
