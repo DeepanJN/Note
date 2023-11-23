@@ -16,6 +16,7 @@ import dagger.android.support.DaggerAppCompatActivity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 class NoteDetailActivity : DaggerAppCompatActivity() {
@@ -43,42 +44,45 @@ class NoteDetailActivity : DaggerAppCompatActivity() {
 
         setupOnTextChangeListeners()
 
-        //Edit text
+    }
 
-        //List of images
-
-        //Edit text for detail
+    override fun onPause() {
+        super.onPause()
+        noteDetailViewModel.cancelHeadingTextUpdateJob()
+        noteDetailViewModel.cancelContentTextUpdateJob()
 
     }
 
     private fun checkAndGetNoteId() {
-
-        val noteId = intent.getLongExtra(ModelUtil.noteId, 0L)
-        if (noteId == 0L) {
-            val note = Note()
-            val noteDetail = NoteDetail()
-            noteDetail.type = NoteType.TEXT
-            val noteWithDetail = NoteWithDetail(note, arrayListOf(noteDetail))
-            lifecycleScope.launch(Dispatchers.IO) {
-                noteDetailViewModel.insertOrUpdateNoteWithDetailList(noteWithDetail)
-            }
-            return
-        }
-
         lifecycleScope.launch(Dispatchers.IO) {
-            val noteDetail = noteDetailViewModel.getNoteWithDetailsByNoteId(noteId)
-            runOnUiThread {
+
+            val noteId = intent.getLongExtra(ModelUtil.noteId, 0L)
+
+            if (noteId == 0L) {
+                val note = Note()
+                val noteDetail = NoteDetail()
+                noteDetail.type = NoteType.TEXT
+                val noteWithDetail = NoteWithDetail(note, arrayListOf(noteDetail))
+                noteDetailViewModel.insertOrUpdateNoteWithDetailList(noteWithDetail)
+                return@launch
+            }
+
+            lifecycleScope.launch(Dispatchers.IO) {
+                val noteDetail = noteDetailViewModel.getNoteWithDetailsByNoteId(noteId)
                 renderUi()
             }
+
         }
     }
 
-    private fun renderUi() {
-        noteDetailViewModel.selectedNoteWithDetail?.let { noteWithDetail ->
-            val note = noteWithDetail.note
-            val noteDetail = noteWithDetail.noteDetailList.firstOrNull { it.type == NoteType.TEXT }
-            binding.noteDetailHeadingTextView.setText(note.title ?: "")
-            binding.noteDetailContentEditText.setText(noteDetail?.value ?: "")
+    private suspend fun renderUi() {
+        withContext(Dispatchers.Main) {
+            noteDetailViewModel.selectedNoteWithDetail.value?.let { noteWithDetail ->
+                val note = noteWithDetail.note
+                val noteDetail = noteWithDetail.noteDetailList.firstOrNull { it.type == NoteType.TEXT }
+                binding.noteDetailHeadingTextView.setText(note.title ?: "")
+                binding.noteDetailContentEditText.setText(noteDetail?.value ?: "")
+            }
         }
     }
 
@@ -94,16 +98,17 @@ class NoteDetailActivity : DaggerAppCompatActivity() {
             }
 
             override fun afterTextChanged(editable: Editable?) {
-                noteDetailViewModel.headingTextUpdateJob?.cancel()
-                noteDetailViewModel.headingTextUpdateJob = lifecycleScope.launch {
+                noteDetailViewModel.cancelHeadingTextUpdateJob()
+                val job = lifecycleScope.launch(Dispatchers.Main) {
                     delay(noteDetailViewModel.onTypeDelay)
                     val newText: String = editable.toString()
-                    val selectedNoteWithDetail = noteDetailViewModel.selectedNoteWithDetail
-                    val note = selectedNoteWithDetail?.note //need to optimise
+                    val selectedNoteWithDetail = noteDetailViewModel.selectedNoteWithDetail.value
+                    val note = selectedNoteWithDetail?.note
                     note?.title = newText
                     Log.d(TAG, "insertOrUpdateNoteWithDetailList noteDetailHeadingTextView $newText")
                     noteDetailViewModel.insertOrUpdateNoteWithDetailList(selectedNoteWithDetail)
                 }
+                noteDetailViewModel.setHeadingTextUpdateJob(job)
             }
         })
 
@@ -117,23 +122,22 @@ class NoteDetailActivity : DaggerAppCompatActivity() {
             }
 
             override fun afterTextChanged(editable: Editable?) {
-                noteDetailViewModel.contentTextUpdateJob?.cancel()
-                noteDetailViewModel.contentTextUpdateJob = lifecycleScope.launch {
+                noteDetailViewModel.cancelContentTextUpdateJob()
+                val job = lifecycleScope.launch(Dispatchers.Main) {
                     delay(noteDetailViewModel.onTypeDelay)
                     val newText: String = editable.toString()
-                    val noteDetail = noteDetailViewModel.selectedNoteWithDetail?.noteDetailList?.filter { it.type == NoteType.TEXT }?.firstOrNull() //need to optimise
+                    val selectedNoteWithDetail = noteDetailViewModel.selectedNoteWithDetail.value
+                    val noteDetail = selectedNoteWithDetail?.noteDetailList?.firstOrNull { it.type == NoteType.TEXT }
                     noteDetail?.value = newText
                     Log.d(TAG, "insertOrUpdateNoteWithDetailList noteDetailContentEditText $newText")
-                    noteDetailViewModel.insertOrUpdateNoteWithDetailList(noteDetailViewModel.selectedNoteWithDetail)
+                    noteDetailViewModel.insertOrUpdateNoteWithDetailList(selectedNoteWithDetail)
                 }
+                noteDetailViewModel.setContentTextUpdateJob(job)
             }
         })
-
-
     }
 
     private fun setupOnClickListeners() {
-
 
         binding.noteDetailAddImageFab.setOnClickListener {
             //Add Image to image scroll
