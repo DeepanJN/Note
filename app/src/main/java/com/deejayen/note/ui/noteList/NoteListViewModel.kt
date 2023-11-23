@@ -1,5 +1,6 @@
 package com.deejayen.note.ui.noteList
 
+import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -13,15 +14,11 @@ class NoteListViewModel(private val noteRepository: NoteRepository) : ViewModel(
     val notesWithDetailsList: LiveData<List<NoteWithDetail>> get() = _notesWithDetailsList
 
 
-    fun getAllNoteWithDetail() {
-        noteRepository.getAllNoteWithDetail().observeForever {
+    fun getAllNoteWithDetail(owner: LifecycleOwner) {
+        noteRepository.getAllNoteWithDetail().observe(owner) {
             _notesWithDetailsList.value = it
         }
     }
-
-//    suspend fun insertOrUpdateNoteWithDetail(noteWithDetail: NoteWithDetail): NoteWithDetail {
-//        return noteRepository.insertOrUpdateNoteWithDetail(noteWithDetail)
-//    }
 
     suspend fun deleteNoteWithDetail(noteWithDetail: NoteWithDetail) {
         return noteRepository.deleteNoteWithDetail(noteWithDetail)

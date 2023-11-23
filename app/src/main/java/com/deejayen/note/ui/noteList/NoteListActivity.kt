@@ -34,7 +34,7 @@ class NoteListActivity : DaggerAppCompatActivity() {
 
         noteListViewModel = ViewModelProvider(this, viewModelFactory)[NoteListViewModel::class.java]
 
-        noteListViewModel.getAllNoteWithDetail()
+        noteListViewModel.getAllNoteWithDetail(this)
 
         setUpRecyclerView()
 

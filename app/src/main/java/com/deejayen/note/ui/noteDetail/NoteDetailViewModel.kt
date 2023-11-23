@@ -11,8 +11,8 @@ import kotlinx.coroutines.withContext
 
 class NoteDetailViewModel(private val noteRepository: NoteRepository) : ViewModel() {
 
-    private var _selectedNoteWithDetail = MutableLiveData<NoteWithDetail?>()
-    val selectedNoteWithDetail: LiveData<NoteWithDetail?> get() = _selectedNoteWithDetail
+    private var _selectedNoteWithDetail = MutableLiveData<NoteWithDetail>()
+    val selectedNoteWithDetail: LiveData<NoteWithDetail> get() = _selectedNoteWithDetail
 
     private var _headingTextUpdateJob: Job? = null
     private var _contentTextUpdateJob: Job? = null
