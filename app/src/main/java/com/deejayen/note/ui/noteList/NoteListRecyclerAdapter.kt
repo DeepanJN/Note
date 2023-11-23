@@ -10,7 +10,7 @@ import com.deejayen.note.util.MockDataUtil
 
 class NoteListRecyclerAdapter : RecyclerView.Adapter<NoteListRecyclerAdapter.ViewHolder>() {
 
-    val noteWithDetailList: ArrayList<NoteWithDetail> = arrayListOf(MockDataUtil.getMockNoteWithDetail())
+    val noteWithDetailList: ArrayList<NoteWithDetail> = arrayListOf(/*MockDataUtil.getMockNoteWithDetail()*/)
     var callback: NoteListListener? = null
 
     interface NoteListListener {

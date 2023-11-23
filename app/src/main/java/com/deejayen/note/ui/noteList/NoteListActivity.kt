@@ -10,6 +10,7 @@ import com.deejayen.note.database.NoteWithDetail
 import com.deejayen.note.databinding.ActivityNoteListBinding
 import com.deejayen.note.ui.noteDetail.NoteDetailActivity
 import com.deejayen.note.util.MockDataUtil
+import com.deejayen.note.util.ModelUtil
 import dagger.android.support.DaggerAppCompatActivity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -47,10 +48,14 @@ class NoteListActivity : DaggerAppCompatActivity() {
 
     }
 
+    override fun onResume() {
+        super.onResume()
+
+    }
+
     private fun setupClickListeners() {
         binding.addNoteFab.setOnClickListener {
-            val intent = Intent(this, NoteDetailActivity::class.java)
-            startActivity(intent)
+            intentToNoteDetail()
         }
     }
 
@@ -65,10 +70,10 @@ class NoteListActivity : DaggerAppCompatActivity() {
     }
 
     private fun addNewNote() {
-        lifecycleScope.launch(Dispatchers.IO) {
-            noteListViewModel.insertOrUpdateNoteWithDetailList(arrayListOf(MockDataUtil.getMockNoteWithDetail()))
-
-        }
+//        lifecycleScope.launch(Dispatchers.IO) {
+//            noteListViewModel.insertOrUpdateNoteWithDetailList(arrayListOf(MockDataUtil.getMockNoteWithDetail()))
+//
+//        }
     }
 
     private fun setUpRecyclerView() {
@@ -78,10 +83,15 @@ class NoteListActivity : DaggerAppCompatActivity() {
 
         noteListRecyclerAdapter.callback = object : (NoteListRecyclerAdapter.NoteListListener) {
             override fun onClickNote(noteWithDetail: NoteWithDetail) {
-                val intent = Intent(this@NoteListActivity, NoteDetailActivity::class.java)
-                startActivity(intent)
+                intentToNoteDetail(noteWithDetail)
             }
         }
+    }
+
+    private fun intentToNoteDetail(noteWithDetail: NoteWithDetail? = null) {
+        val intent = Intent(this@NoteListActivity, NoteDetailActivity::class.java)
+        noteWithDetail?.let { intent.putExtra(ModelUtil.noteId, noteWithDetail.note.noteId) }
+        startActivity(intent)
     }
 
 }

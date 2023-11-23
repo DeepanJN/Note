@@ -12,12 +12,16 @@ class NoteRepository @Inject constructor(private val noteDao: NoteDao) {
         return noteDao.getAllNoteWithDetail()
     }
 
-    suspend fun insertOrUpdateNoteWithDetailList(noteWithDetailArrList: ArrayList<NoteWithDetail>): ArrayList<NoteWithDetail> {
-        return noteDao.insertOrUpdateNoteWithDetailList(noteWithDetailArrList)
+    suspend fun insertOrUpdateNoteWithDetail(noteWithDetail: NoteWithDetail): NoteWithDetail {
+        return noteDao.insertOrUpdateNoteWithDetail(noteWithDetail)
     }
 
     suspend fun deleteNoteWithDetail(noteWithDetail: NoteWithDetail) {
         return noteDao.deleteNoteWithDetail(noteWithDetail)
+    }
+
+    suspend fun getNoteWithDetailsByNoteId(noteId: Long): NoteWithDetail {
+        return noteDao.getNoteWithDetailsByNoteId(noteId)
     }
 
 }

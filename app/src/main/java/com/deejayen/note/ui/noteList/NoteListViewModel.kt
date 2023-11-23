@@ -19,9 +19,9 @@ class NoteListViewModel(private val noteRepository: NoteRepository) : ViewModel(
         }
     }
 
-    suspend fun insertOrUpdateNoteWithDetailList(noteWithDetailArrList: ArrayList<NoteWithDetail>): ArrayList<NoteWithDetail> {
-        return noteRepository.insertOrUpdateNoteWithDetailList(noteWithDetailArrList)
-    }
+//    suspend fun insertOrUpdateNoteWithDetail(noteWithDetail: NoteWithDetail): NoteWithDetail {
+//        return noteRepository.insertOrUpdateNoteWithDetail(noteWithDetail)
+//    }
 
     suspend fun deleteNoteWithDetail(noteWithDetail: NoteWithDetail) {
         return noteRepository.deleteNoteWithDetail(noteWithDetail)

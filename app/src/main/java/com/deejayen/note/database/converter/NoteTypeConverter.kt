@@ -12,4 +12,5 @@ class NoteTypeConverter {
     fun toNoteType(value: String): NoteType {
         return enumValueOf(value)
     }
+
 }

@@ -24,7 +24,7 @@ interface NoteDao {
 
     @Transaction
     @Query("SELECT * FROM Note INNER JOIN NoteDetail ON Note.noteId = NoteDetail.noteId WHERE Note.noteId = :noteId")
-    suspend fun getNoteWithDetailsById(noteId: Long): NoteWithDetail
+    suspend fun getNoteWithDetailsByNoteId(noteId: Long): NoteWithDetail
     //endregion
 
     //region Update
@@ -60,7 +60,7 @@ interface NoteDao {
         return noteWithDetailList
     }
     @Transaction
-    private suspend fun insertOrUpdateNoteWithDetail(noteWithDetail: NoteWithDetail): NoteWithDetail {
+     suspend fun insertOrUpdateNoteWithDetail(noteWithDetail: NoteWithDetail): NoteWithDetail {
 
         val note = noteWithDetail.note
         val noteDetailList = noteWithDetail.noteDetailList
@@ -68,7 +68,7 @@ interface NoteDao {
         val noteId = note.noteId
         if (noteId != 0L) { // Update
 
-            val localNoteWithDetail = getNoteWithDetailsById(noteId)
+            val localNoteWithDetail = getNoteWithDetailsByNoteId(noteId)
             val localNoteDetailList = localNoteWithDetail.noteDetailList
 
             updateNote(note)
