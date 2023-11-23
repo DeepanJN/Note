@@ -3,17 +3,13 @@ package com.deejayen.note.ui.noteList
 import android.content.Intent
 import android.os.Bundle
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.deejayen.note.database.NoteWithDetail
 import com.deejayen.note.databinding.ActivityNoteListBinding
 import com.deejayen.note.ui.noteDetail.NoteDetailActivity
-import com.deejayen.note.util.MockDataUtil
 import com.deejayen.note.util.ModelUtil
 import dagger.android.support.DaggerAppCompatActivity
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 class NoteListActivity : DaggerAppCompatActivity() {

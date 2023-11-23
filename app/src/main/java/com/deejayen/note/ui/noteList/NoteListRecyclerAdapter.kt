@@ -5,7 +5,6 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.deejayen.note.database.NoteWithDetail
 import com.deejayen.note.databinding.ItemNoteListBinding
-import com.deejayen.note.util.MockDataUtil
 
 
 class NoteListRecyclerAdapter : RecyclerView.Adapter<NoteListRecyclerAdapter.ViewHolder>() {

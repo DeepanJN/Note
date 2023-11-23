@@ -11,13 +11,11 @@ import com.deejayen.note.database.entity.Note
 import com.deejayen.note.database.entity.NoteDetail
 import com.deejayen.note.database.entity.NoteType
 import com.deejayen.note.databinding.ActivityNoteDetailBinding
-import com.deejayen.note.databinding.ActivityNoteListBinding
 import com.deejayen.note.util.ModelUtil
 import dagger.android.support.DaggerAppCompatActivity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 class NoteDetailActivity : DaggerAppCompatActivity() {
