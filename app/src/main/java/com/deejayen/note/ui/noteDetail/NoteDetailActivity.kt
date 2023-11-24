@@ -4,8 +4,11 @@ import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
+import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import com.deejayen.note.R
 import com.deejayen.note.database.NoteWithDetail
 import com.deejayen.note.database.entity.Note
 import com.deejayen.note.database.entity.NoteDetail
@@ -28,6 +31,9 @@ class NoteDetailActivity : DaggerAppCompatActivity() {
 
     private lateinit var binding: ActivityNoteDetailBinding
 
+    private var isFirstTimeHeadingUpdate = true
+    private var isFirstTimeContentUpdate = true
+
     val TAG = "NoteDetailActivity"
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -44,7 +50,32 @@ class NoteDetailActivity : DaggerAppCompatActivity() {
 
         setupOnTextChangeListeners()
 
+//        setUpOnBackPressCallBack()
+
     }
+
+    override fun onBackPressed() {
+        if (noteDetailViewModel.checkAnyUpdateJobIsActive()) {
+            Toast.makeText(this@NoteDetailActivity.applicationContext, getString(R.string.saving_in_progress_please_wait), Toast.LENGTH_LONG).show()
+        } else {
+            super.onBackPressed()
+        }
+
+    }
+
+//    private fun NoteDetailActivity.setUpOnBackPressCallBack() {
+//        val callback = object : OnBackPressedCallback(true) {
+//            override fun handleOnBackPressed() {
+//                if (noteDetailViewModel.checkBothCoroutineJobsAreCompleted()) {
+//                    Toast.makeText(this@NoteDetailActivity.applicationContext, getString(R.string.saving_in_progress_please_wait), Toast.LENGTH_LONG).show()
+//                } else {
+//                    onBackPressed()
+//                }
+//            }
+//        }
+//
+//        onBackPressedDispatcher.addCallback(this, callback)
+//    }
 
     override fun onPause() {
         super.onPause()
@@ -68,7 +99,7 @@ class NoteDetailActivity : DaggerAppCompatActivity() {
             }
 
             lifecycleScope.launch(Dispatchers.IO) {
-                val noteDetail = noteDetailViewModel.getNoteWithDetailsByNoteId(noteId)
+                noteDetailViewModel.getNoteWithDetailsByNoteId(noteId)
                 renderUi()
             }
 
@@ -76,6 +107,8 @@ class NoteDetailActivity : DaggerAppCompatActivity() {
     }
 
     private suspend fun renderUi() {
+        isFirstTimeHeadingUpdate = true
+        isFirstTimeContentUpdate = true
         withContext(Dispatchers.Main) {
             noteDetailViewModel.selectedNoteWithDetail.value?.let { noteWithDetail ->
                 val note = noteWithDetail.note
@@ -98,9 +131,13 @@ class NoteDetailActivity : DaggerAppCompatActivity() {
             }
 
             override fun afterTextChanged(editable: Editable?) {
+                if (isFirstTimeHeadingUpdate) {
+                    isFirstTimeHeadingUpdate = false
+                    return
+                }
                 noteDetailViewModel.cancelHeadingTextUpdateJob()
                 val job = lifecycleScope.launch(Dispatchers.Main) {
-                    delay(noteDetailViewModel.onTypeDelay)
+                    delay(noteDetailViewModel.ON_TYPE_DELAY)
                     val newText: String = editable.toString()
                     val selectedNoteWithDetail = noteDetailViewModel.selectedNoteWithDetail.value
                     val note = selectedNoteWithDetail?.note
@@ -122,9 +159,13 @@ class NoteDetailActivity : DaggerAppCompatActivity() {
             }
 
             override fun afterTextChanged(editable: Editable?) {
+                if (isFirstTimeContentUpdate) {
+                    isFirstTimeContentUpdate = false
+                    return
+                }
                 noteDetailViewModel.cancelContentTextUpdateJob()
                 val job = lifecycleScope.launch(Dispatchers.Main) {
-                    delay(noteDetailViewModel.onTypeDelay)
+                    delay(noteDetailViewModel.ON_TYPE_DELAY)
                     val newText: String = editable.toString()
                     val selectedNoteWithDetail = noteDetailViewModel.selectedNoteWithDetail.value
                     val noteDetail = selectedNoteWithDetail?.noteDetailList?.firstOrNull { it.type == NoteType.TEXT }
@@ -142,6 +183,10 @@ class NoteDetailActivity : DaggerAppCompatActivity() {
         binding.noteDetailAddImageFab.setOnClickListener {
             //Add Image to image scroll
         }
+
+//        binding.noteDetailMainLayout.setOnClickListener {
+//            binding.noteDetailContentEditText.requestFocus()
+//        }
 
     }
 

@@ -2,6 +2,7 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/noteDetailMainLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".ui.noteList.NoteListActivity">
@@ -17,38 +18,64 @@
 
     <!--    LinearLayout-->
 
-    <LinearLayout
-        android:id="@+id/noteDetailScrollImageView"
-        android:layout_width="match_parent"
-        android:layout_height="60dp"
-        android:orientation="horizontal"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/noteDetailBackPressButton" />
-
-    <EditText
-        android:id="@+id/noteDetailHeadingTextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="24dp"
-        android:hint="Title"
-        android:textSize="32sp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/noteDetailScrollImageView" />
-
-    <EditText
-        android:id="@+id/noteDetailContentEditText"
-        android:layout_width="match_parent"
+    <ScrollView
+        android:id="@+id/noteDetailMainScrollView"
+        android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="24dp"
-        android:gravity="top"
-        android:hint="Note"
-        android:textSize="18sp"
+        android:orientation="vertical"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/noteDetailHeadingTextView" />
+        app:layout_constraintTop_toTopOf="parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:id="@+id/noteDetailScrollImageView"
+                android:layout_width="match_parent"
+                android:layout_height="60dp"
+                android:orientation="horizontal"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/noteDetailBackPressButton" />
+
+
+            <EditText
+                android:id="@+id/noteDetailHeadingTextView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:layout_marginTop="24dp"
+                android:layout_marginEnd="8dp"
+                android:backgroundTint="@color/white"
+                android:hint="Title"
+                android:textSize="28sp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/noteDetailScrollImageView" />
+
+            <EditText
+                android:id="@+id/noteDetailContentEditText"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginStart="8dp"
+                android:layout_marginTop="24dp"
+                android:minHeight="200dp"
+                android:backgroundTint="@color/white"
+                android:gravity="top"
+                android:hint="Note"
+                android:textSize="18sp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/noteDetailHeadingTextView" />
+
+        </LinearLayout>
+
+    </ScrollView>
+
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/noteDetailAddImageFab"

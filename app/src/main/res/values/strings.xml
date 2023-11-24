@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">Note</string>
-    <string name="welcome_note">Welcome to Note!</string>
+    <string name="welcome_note">!</string>
+    <string name="saving_in_progress_please_wait">Saving in progress, Please wait</string>
 </resources>
