@@ -7,16 +7,25 @@
     android:layout_height="match_parent"
     tools:context=".ui.noteList.NoteListActivity">
 
-    <ImageView
-        android:id="@+id/noteDetailBackPressButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:padding="8dp"
-        android:src="@drawable/ic_arrow_back_24"
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:orientation="horizontal"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent">
 
-    <!--    LinearLayout-->
+        <ImageView
+            android:id="@+id/noteDetailBackPressButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:padding="12dp"
+            android:src="@drawable/ic_arrow_back_24"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+    </LinearLayout>
 
     <ScrollView
         android:id="@+id/noteDetailMainScrollView"
@@ -62,10 +71,10 @@
                 android:layout_height="match_parent"
                 android:layout_marginStart="8dp"
                 android:layout_marginTop="24dp"
-                android:minHeight="200dp"
                 android:backgroundTint="@color/white"
                 android:gravity="top"
-                android:hint="Note"
+                android:hint="Description"
+                android:minHeight="200dp"
                 android:textSize="18sp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"

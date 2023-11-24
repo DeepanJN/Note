@@ -1,13 +1,19 @@
 package com.deejayen.note.ui.noteDetail
 
+import android.content.Intent
+
+import android.Manifest
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
 import android.widget.Toast
-import androidx.activity.OnBackPressedCallback
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+
 import com.deejayen.note.R
 import com.deejayen.note.database.NoteWithDetail
 import com.deejayen.note.database.entity.Note
@@ -16,10 +22,13 @@ import com.deejayen.note.database.entity.NoteType
 import com.deejayen.note.databinding.ActivityNoteDetailBinding
 import com.deejayen.note.util.ModelUtil
 import dagger.android.support.DaggerAppCompatActivity
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.io.File
+import java.io.FileOutputStream
 import javax.inject.Inject
 
 class NoteDetailActivity : DaggerAppCompatActivity() {
@@ -63,19 +72,6 @@ class NoteDetailActivity : DaggerAppCompatActivity() {
 
     }
 
-//    private fun NoteDetailActivity.setUpOnBackPressCallBack() {
-//        val callback = object : OnBackPressedCallback(true) {
-//            override fun handleOnBackPressed() {
-//                if (noteDetailViewModel.checkBothCoroutineJobsAreCompleted()) {
-//                    Toast.makeText(this@NoteDetailActivity.applicationContext, getString(R.string.saving_in_progress_please_wait), Toast.LENGTH_LONG).show()
-//                } else {
-//                    onBackPressed()
-//                }
-//            }
-//        }
-//
-//        onBackPressedDispatcher.addCallback(this, callback)
-//    }
 
     override fun onPause() {
         super.onPause()
@@ -181,14 +177,87 @@ class NoteDetailActivity : DaggerAppCompatActivity() {
     private fun setupOnClickListeners() {
 
         binding.noteDetailAddImageFab.setOnClickListener {
-            //Add Image to image scroll
+            if (checkPermission()) {
+                openGallery()
+            } else {
+                requestPermission()
+            }
         }
 
-//        binding.noteDetailMainLayout.setOnClickListener {
-//            binding.noteDetailContentEditText.requestFocus()
-//        }
+        binding.noteDetailBackPressButton.setOnClickListener {
+            this.onBackPressed()
+        }
 
     }
+
+
+    private val requestPermissionLauncher =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
+            if (isGranted) {
+                openGallery()
+            } else {
+                Toast.makeText(this, "Permission denied. Please go to settings", Toast.LENGTH_LONG).show()
+            }
+        }
+
+    private val getContentLauncher =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == RESULT_OK) {
+                result.data?.let { intent ->
+                    val clipData = intent.clipData
+                    if (clipData != null) {
+                        for (i in 0 until clipData.itemCount) {
+                            val uri = clipData.getItemAt(i).uri
+                            CoroutineScope(Dispatchers.IO).launch {
+                                saveImageInBackground(uri)
+                            }
+                        }
+                    } else if (intent.data != null) {
+                        val uri = intent.data!!
+                        CoroutineScope(Dispatchers.IO).launch {
+                            saveImageInBackground(uri)
+                        }
+                    }
+                }
+            }
+        }
+
+
+    private fun checkPermission(): Boolean {
+        return ContextCompat.checkSelfPermission(
+            this,
+            Manifest.permission.READ_EXTERNAL_STORAGE
+        ) == PackageManager.PERMISSION_GRANTED
+    }
+
+    private fun requestPermission() {
+        requestPermissionLauncher.launch(Manifest.permission.READ_EXTERNAL_STORAGE)
+    }
+
+    private fun openGallery() {
+        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
+            addCategory(Intent.CATEGORY_OPENABLE)
+            type = "image/*"
+            putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
+        }
+        getContentLauncher.launch(intent)
+    }
+
+    private suspend fun saveImageInBackground(uri: android.net.Uri): String? {
+        withContext(Dispatchers.IO) {
+            val file = File(filesDir, "${System.currentTimeMillis()}.jpg")
+            val inputStream = contentResolver.openInputStream(uri)
+            inputStream?.use { input ->
+                FileOutputStream(file).use { output ->
+                    input.copyTo(output)
+                }
+            }
+            return@withContext file.absolutePath
+        }
+        return null
+    }
+
+
 
 
 }

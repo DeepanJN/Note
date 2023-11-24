@@ -19,7 +19,7 @@ interface NoteDao {
 
     //region Read
     @Transaction
-    @Query("SELECT * FROM Note INNER JOIN NoteDetail GROUP BY Note.noteId")
+    @Query("SELECT * FROM Note INNER JOIN NoteDetail ON Note.noteId = NoteDetail.noteId GROUP BY Note.noteId")
     fun getAllNoteWithDetail(): LiveData<List<NoteWithDetail>>
 
     @Transaction

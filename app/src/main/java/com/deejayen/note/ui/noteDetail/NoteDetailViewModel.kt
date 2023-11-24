@@ -36,6 +36,16 @@ class NoteDetailViewModel(private val noteRepository: NoteRepository) : ViewMode
             _selectedNoteWithDetail.postValue(noteRepository.getNoteWithDetailsByNoteId(noteId))
         }
     }
+    fun saveImageFileToContent(vararg imageFilePath: String) {//TODO
+//        val arrListOfNoteDetail: ArrayList<NoteDetail> = arrayListOf()
+//        imageFilePath.forEach {
+//            val noteDetail = NoteDetail(type = NoteType.IMAGE, value = it)
+//            arrListOfNoteDetail.add(noteDetail)
+//        }
+//
+//        _selectedNoteWithDetail.value.noteDetailList = arrListOfNoteDetail
+//        insertOrUpdateNoteWithDetailList()
+    }
 
     fun setHeadingTextUpdateJob(job: Job) {
         _headingTextUpdateJob = job
