@@ -3,6 +3,7 @@ package com.deejayen.note.ui.noteDetail
 import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.icu.text.CaseMap.Title
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -45,8 +46,8 @@ class NoteDetailActivity : DaggerAppCompatActivity() {
 
     private lateinit var binding: ActivityNoteDetailBinding
 
-    private var isFirstTimeHeadingUpdate = true
-    private var isFirstTimeContentUpdate = true
+    private var isFirstTimeHeadingUpdate = false
+    private var isFirstTimeContentUpdate = false
 
     val TAG = "NoteDetailActivity"
 
@@ -84,35 +85,29 @@ class NoteDetailActivity : DaggerAppCompatActivity() {
 //    }
 
     private fun checkAndGetNoteId() {
+        val noteId = intent.getLongExtra(ModelUtil.noteId, 0L)
         lifecycleScope.launch(Dispatchers.IO) {
-
-            val noteId = intent.getLongExtra(ModelUtil.noteId, 0L)
-
-            if (noteId == 0L) {
-                val note = Note()
-                val noteTextDetail = NoteTextDetail()
-                val noteWithDetail = NoteWithDetail(note, listOf(noteTextDetail), listOf())
-                noteDetailViewModel.insertOrUpdateNoteWithDetailList(noteWithDetail)
-                return@launch
-            }
-
-            lifecycleScope.launch(Dispatchers.IO) {
+            if (noteId != 0L) {
                 noteDetailViewModel.getNoteWithDetailsByNoteId(noteId)
-                renderUi()
+                withContext(Dispatchers.Main) {
+                    renderUi()
+                }
             }
-
         }
     }
 
     private suspend fun renderUi() {
-        isFirstTimeHeadingUpdate = true
-        isFirstTimeContentUpdate = true
         withContext(Dispatchers.Main) {
+
             noteDetailViewModel.selectedNoteWithDetail.value?.let { noteWithDetail ->
+                isFirstTimeHeadingUpdate = true
+                isFirstTimeContentUpdate = true
                 val note = noteWithDetail.note
-                val noteDetail = noteWithDetail.noteTextDetailList.firstOrNull()
-                binding.noteDetailHeadingTextView.setText(note.title ?: "")
-                binding.noteDetailContentEditText.setText(noteDetail?.value ?: "")
+                val noteTextDetail = noteWithDetail.noteTextDetailList.firstOrNull()
+
+                Log.d(TAG, " renderUi noteWithDetail ${note?.title} --- ${noteTextDetail?.value} ")
+                binding.noteDetailHeadingTextView.setText(note?.title ?: "")
+                binding.noteDetailContentEditText.setText(noteTextDetail?.value ?: "")
             }
         }
     }
@@ -136,12 +131,21 @@ class NoteDetailActivity : DaggerAppCompatActivity() {
                 noteDetailViewModel.cancelHeadingTextUpdateJob()
                 val job = lifecycleScope.launch(Dispatchers.Main) {
                     delay(noteDetailViewModel.ON_TYPE_DELAY)
+                    Log.d(TAG, "afterTextChanged HeadingET")
                     val newText: String = editable.toString()
-                    val selectedNoteWithDetail = noteDetailViewModel.selectedNoteWithDetail.value
+                    var selectedNoteWithDetail = noteDetailViewModel.selectedNoteWithDetail.value
                     val note = selectedNoteWithDetail?.note
-                    note?.title = newText
-                    Log.d(TAG, "insertOrUpdateNoteWithDetailList noteDetailHeadingTextView $newText")
+                    if (note != null) {
+                        note.title = newText
+                    } else {
+                        val newNote = Note(title = newText)
+                        selectedNoteWithDetail?.note = newNote
+                        selectedNoteWithDetail = NoteWithDetail(note = newNote)
+                    }
+
                     noteDetailViewModel.insertOrUpdateNoteWithDetailList(selectedNoteWithDetail)
+                    Log.d(TAG, "insertOrUpdateNoteWithDetailList noteDetailHeadingTextView $newText")
+
                 }
                 noteDetailViewModel.setHeadingTextUpdateJob(job)
             }
@@ -164,10 +168,23 @@ class NoteDetailActivity : DaggerAppCompatActivity() {
                 noteDetailViewModel.cancelContentTextUpdateJob()
                 val job = lifecycleScope.launch(Dispatchers.Main) {
                     delay(noteDetailViewModel.ON_TYPE_DELAY)
+                    Log.d(TAG, "afterTextChanged DescriptionET")
                     val newText: String = editable.toString()
-                    val selectedNoteWithDetail = noteDetailViewModel.selectedNoteWithDetail.value
-                    val noteDetail = selectedNoteWithDetail?.noteTextDetailList?.firstOrNull()
-                    noteDetail?.value = newText
+                    var selectedNoteWithDetail = noteDetailViewModel.selectedNoteWithDetail.value
+                    var note = selectedNoteWithDetail?.note
+                    var noteTextDetail = selectedNoteWithDetail?.noteTextDetailList?.firstOrNull()
+                    if (note != null && noteTextDetail != null) {
+                        noteTextDetail.value = newText
+                    } else {
+                        if (note == null) {
+                            note = Note()
+                        }
+                        if (noteTextDetail == null) {
+                            noteTextDetail = NoteTextDetail(value = newText)
+                        }
+                        selectedNoteWithDetail = NoteWithDetail(note, arrayListOf(noteTextDetail))
+                    }
+
                     Log.d(TAG, "insertOrUpdateNoteWithDetailList noteDetailContentEditText $newText")
                     noteDetailViewModel.insertOrUpdateNoteWithDetailList(selectedNoteWithDetail)
                 }
@@ -213,6 +230,7 @@ class NoteDetailActivity : DaggerAppCompatActivity() {
                             CoroutineScope(Dispatchers.IO).launch {
                                 val filePathArrayList = saveImageInBackground(uri)
                                 filePathArrayList?.let { renderImageFileToView(it) }
+                                //make save call
                             }
                         }
                     } else if (intent.data != null) {
@@ -220,6 +238,7 @@ class NoteDetailActivity : DaggerAppCompatActivity() {
                         CoroutineScope(Dispatchers.IO).launch {
                             val filePathArrayList = saveImageInBackground(uri)
                             filePathArrayList?.let { renderImageFileToView(it) }
+                            //make save call
                         }
                     }
                 }
@@ -273,7 +292,7 @@ class NoteDetailActivity : DaggerAppCompatActivity() {
 
             val file = File(filePath)
             if (file.exists()) {
-                withContext(Dispatchers.Main){
+                withContext(Dispatchers.Main) {
                     picasso.load("file:$file").into(imageView)
                     binding.noteDetailScrollLinerLayout.addView(imageView)
                 }

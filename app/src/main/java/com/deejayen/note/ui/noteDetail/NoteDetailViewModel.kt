@@ -4,6 +4,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.deejayen.note.database.NoteWithDetail
+import com.deejayen.note.database.entity.NoteImageDetail
 import com.deejayen.note.repository.NoteRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -34,15 +35,20 @@ class NoteDetailViewModel(private val noteRepository: NoteRepository) : ViewMode
             _selectedNoteWithDetail.postValue(noteRepository.getNoteWithDetailsByNoteId(noteId))
         }
     }
-    fun saveImageFileToContent(vararg imageFilePath: String) {//TODO
-//        val arrListOfNoteDetail: ArrayList<NoteDetail> = arrayListOf()
-//        imageFilePath.forEach {
-//            val noteDetail = NoteDetail(type = NoteType.IMAGE, value = it)
-//            arrListOfNoteDetail.add(noteDetail)
-//        }
-//
-//        _selectedNoteWithDetail.value.noteDetailList = arrListOfNoteDetail
-//        insertOrUpdateNoteWithDetailList()
+
+    suspend fun saveImageFileToContent(vararg imageFilePath: String) {
+        withContext(Dispatchers.IO) {
+
+            val arrListOfNoteDetail: ArrayList<NoteImageDetail> = arrayListOf()
+            imageFilePath.forEach {
+                val note = selectedNoteWithDetail.value?.note
+                val noteId = note?.noteId ?: return@forEach
+                val noteDetail = NoteImageDetail(value = it, noteId = noteId)
+                arrListOfNoteDetail.add(noteDetail)
+            }
+            _selectedNoteWithDetail.value?.noteImageDetailList = arrListOfNoteDetail
+            _selectedNoteWithDetail.value?.let { noteRepository.insertOrUpdateNoteWithDetail(it) }
+        }
     }
 
     fun setHeadingTextUpdateJob(job: Job) {

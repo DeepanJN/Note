@@ -6,7 +6,11 @@ import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.deejayen.note.database.NoteDatabase
+import com.deejayen.note.database.NoteWithDetail
 import com.deejayen.note.database.dao.NoteDao
+import com.deejayen.note.database.entity.Note
+import com.deejayen.note.database.entity.NoteImageDetail
+import com.deejayen.note.database.entity.NoteTextDetail
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runTest
 import org.junit.After
@@ -48,11 +52,66 @@ class NoteDaoTest {
     }
 
     @Test
-    fun insertNoteWithDetails() = runTest{
-        launch {
+    fun insertNoteAndCheckDetails() = runTest {
 
-//            noteDao.insertNoteWithDetails()
-        }
+        var noteId = 0L
+        launch {
+            noteId = noteDao.insertNote(Note(title = "Title"))
+            noteDao.insertNoteTextDetail(NoteTextDetail(value = "Detail", noteId = noteId))
+            noteDao.insertImageTextDetail(NoteImageDetail(value = "filepath", noteId = noteId))
+        }.join()
+
+        val noteDetail = noteDao.getNoteWithDetailsByNoteId(noteId)
+        assertEquals(noteDetail?.note?.title ?: "", "Title")
+        assertEquals(noteDetail?.noteTextDetailList?.firstOrNull()?.value ?: "", "Detail")
+        assertEquals(noteDetail?.noteImageDetailList?.firstOrNull()?.value ?: "", "filepath")
+
+
+
+
+    }
+
+    @Test
+    fun checkInsertOrUpdateNoteWithDetail() = runTest {
+
+        val noteWithDetail = NoteWithDetail()
+        noteWithDetail.note = Note(title = "Title")
+        noteWithDetail.noteTextDetailList = arrayListOf(NoteTextDetail(value = "Des"))
+
+        launch {
+            noteDao.insertOrUpdateNoteWithDetail(noteWithDetail)
+        }.join()
+
+        assertEquals(noteWithDetail.note?.title ?: "", "Title")
+        assertEquals(noteWithDetail.noteTextDetailList?.firstOrNull()?.value ?: "", "Des")
+
+//        launch {
+//            noteWithDetail.noteTextDetailList?.firstOrNull()?.value = "New"
+//            noteDao.insertOrUpdateNoteWithDetail(noteWithDetail)
+//        }.join()
+
+        val newNoteWithDetail = noteDao.getNoteWithDetailsByNoteId(noteWithDetail.note?.noteId ?: 0L)
+        assertEquals(newNoteWithDetail?.noteTextDetailList?.firstOrNull()?.value, "Des")
+
+    }
+
+
+    @Test
+    fun insertOnlyNoteAndCheck() = runTest {
+
+        var noteId = 0L
+        launch {
+            noteId = noteDao.insertNote(Note(title = "Title"))
+            /*noteDao.insertNoteTextDetail(NoteTextDetail(value = "Detail", noteId = noteId))*/
+            /*noteDao.insertImageTextDetail(NoteImageDetail(value = "filepath", noteId = noteId))*/
+        }.join()
+
+        val noteDetail = noteDao.getNoteWithDetailsByNoteId(noteId)
+        assertEquals(noteDetail?.note?.title ?: "", "Title")
+
+
+
+
     }
 
 //    @Test

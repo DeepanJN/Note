@@ -4,16 +4,17 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.deejayen.note.database.NoteWithDetail
+import com.deejayen.note.database.entity.Note
 import com.deejayen.note.databinding.ItemNoteListBinding
 
 
 class NoteListRecyclerAdapter : RecyclerView.Adapter<NoteListRecyclerAdapter.ViewHolder>() {
 
-    val noteWithDetailList: ArrayList<NoteWithDetail> = arrayListOf(/*MockDataUtil.getMockNoteWithDetail()*/)
+    val noteList: ArrayList<Note> = arrayListOf()
     var callback: NoteListListener? = null
 
     interface NoteListListener {
-        fun onClickNote(noteWithDetail: NoteWithDetail)
+        fun onClickNote(note: Note)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -22,23 +23,23 @@ class NoteListRecyclerAdapter : RecyclerView.Adapter<NoteListRecyclerAdapter.Vie
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        holder.renderView(noteWithDetailList[position])
+        holder.renderView(noteList[position])
         holder.binding.root.setOnClickListener {
-            callback?.onClickNote(noteWithDetailList[position])
+            callback?.onClickNote(noteList[position])
         }
     }
 
-    override fun getItemCount(): Int = noteWithDetailList.size
+    override fun getItemCount(): Int = noteList.size
 
-    fun setNoteWithDetailList(newNoteDetailList: ArrayList<NoteWithDetail>) {
-        noteWithDetailList.clear()
-        noteWithDetailList.addAll(newNoteDetailList)
+    fun setNoteWithDetailList(newNoteList: ArrayList<Note>) {
+        noteList.clear()
+        noteList.addAll(newNoteList)
         notifyDataSetChanged()
     }
 
     inner class ViewHolder(val binding: ItemNoteListBinding) : RecyclerView.ViewHolder(binding.root) {
-        fun renderView(noteWithDetail: NoteWithDetail) {
-            binding.itemNoteListTitleTv.text = noteWithDetail.note.title ?: ""
+        fun renderView(note: Note) {
+            binding.itemNoteListTitleTv.text = note.title ?: ""
         }
     }
 }

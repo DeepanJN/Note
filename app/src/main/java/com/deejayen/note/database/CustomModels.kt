@@ -9,13 +9,13 @@ import com.deejayen.note.database.entity.NoteTextDetail
 
 data class NoteWithDetail(
 
-    @Embedded val note: Note,
+    @Embedded var note: Note? = null,
 
     @Relation(parentColumn = "noteId", entityColumn = "noteId")
-    val noteTextDetailList: List<NoteTextDetail>, //One
+    var noteTextDetailList: List<NoteTextDetail> = ArrayList(),
 
     @Relation(parentColumn = "noteId", entityColumn = "noteId")
-    val noteImageDetailList: List<NoteImageDetail>, //Many
+    var noteImageDetailList: List<NoteImageDetail> = ArrayList(),
 
-)
+    )
 

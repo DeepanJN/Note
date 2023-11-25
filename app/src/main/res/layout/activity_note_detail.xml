@@ -82,7 +82,7 @@
                 android:backgroundTint="@color/white"
                 android:gravity="top"
                 android:hint="Description"
-                android:minHeight="200dp"
+                android:minHeight="300dp"
                 android:textSize="18sp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"

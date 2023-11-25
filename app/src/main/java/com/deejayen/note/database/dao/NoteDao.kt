@@ -4,6 +4,7 @@ import androidx.lifecycle.LiveData
 import androidx.room.*
 import com.deejayen.note.database.NoteWithDetail
 import com.deejayen.note.database.entity.Note
+import com.deejayen.note.database.entity.NoteImageDetail
 import com.deejayen.note.database.entity.NoteTextDetail
 
 @Dao
@@ -15,16 +16,24 @@ interface NoteDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertNoteTextDetail(noteTextDetail: NoteTextDetail): Long
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertImageTextDetail(noteImageDetail: NoteImageDetail): Long
     //endregion
 
     //region Read
-    @Transaction
-    @Query("SELECT * FROM Note INNER JOIN NoteTextDetail ON Note.noteId = NoteTextDetail.noteId GROUP BY Note.noteId")
-    fun getAllNoteWithDetail(): LiveData<List<NoteWithDetail>>
 
     @Transaction
-    @Query("SELECT * FROM Note INNER JOIN NoteTextDetail ON Note.noteId = NoteTextDetail.noteId WHERE Note.noteId = :noteId")
-    suspend fun getNoteWithDetailsByNoteId(noteId: Long): NoteWithDetail
+    @Query("SELECT * FROM Note")
+    fun getAllNote(): LiveData<List<Note>>
+
+//    @Transaction
+//    @Query("SELECT * FROM Note INNER JOIN NoteTextDetail ON Note.noteId = NoteTextDetail.noteId GROUP BY Note.noteId")
+//    fun getAllNoteWithDetail(): LiveData<List<NoteWithDetail>>
+
+    @Query("SELECT * FROM Note WHERE Note.noteId = :noteId")
+    fun getNoteWithDetailsByNoteId(noteId: Long): NoteWithDetail?
+
     //endregion
 
     //region Update
@@ -41,13 +50,17 @@ interface NoteDao {
 
     @Delete
     suspend fun deleteNoteTextDetail(noteTextDetail: NoteTextDetail)
+
+    @Delete
+    suspend fun deleteNoteImageDetail(noteImageDetail: NoteImageDetail)
+
     //endregion
 
     //Delete image files before deleting the entry
     suspend fun deleteNoteWithDetail(noteWithDetail: NoteWithDetail) {
         val note = noteWithDetail.note
         val noteDetails = noteWithDetail.noteTextDetailList.firstOrNull()
-        deleteNote(note)
+        note?.let { deleteNote(it) }
         //TODO:Check cascade delete working properly
     }
 
@@ -61,56 +74,44 @@ interface NoteDao {
     @Transaction
     suspend fun insertOrUpdateNoteWithDetail(noteWithDetail: NoteWithDetail): NoteWithDetail {
 
-        val note = noteWithDetail.note
-        val noteTextDetailList = noteWithDetail.noteTextDetailList
+        val note = noteWithDetail.note ?: return noteWithDetail
+        val noteTextDetail = noteWithDetail.noteTextDetailList.firstOrNull()
+        val noteImageDetailList = noteWithDetail.noteImageDetailList
 
         val noteId = note.noteId
         if (noteId != 0L) { // Update
 
-            val localNoteWithDetail = getNoteWithDetailsByNoteId(noteId)
-            val localNoteTextDetailList = localNoteWithDetail.noteTextDetailList
-
             updateNote(note)
+            insertOrUpdateNoteTextDetail(noteTextDetail, noteId)
 
-            noteTextDetailList.forEachIndexed { index, noteTextDetail ->
+        } else {
 
-                val localTextDetail = localNoteTextDetailList.firstOrNull()
-                if (localTextDetail?.noteTextDetailId == noteTextDetail.noteTextDetailId) {
-                    updateNoteTextDetail(noteTextDetail)
-                } else {
-                    noteTextDetail.noteId = noteId
-                    insertNoteTextDetail(noteTextDetail)
-                }
-
-            }
-
-//            localNoteTextDetailList.forEachIndexed { index, localNoteDetail ->
-//                var hasLocalEntry = false
-//                noteTextDetailList.forEach { noteDetail ->
-//                    if (noteDetail.noteTextDetailId == localNoteDetail.noteTextDetailId) {
-//                        hasLocalEntry = true
-//                        return@forEach
-//                    }
-//                }
-//                if (!hasLocalEntry) {
-//                    deleteNoteTextDetail(localNoteDetail) //Delete the image before accessing dao
-//                }
-//            }
-
-        } else { // Insert
+            // Insert
             val newNoteId = insertNote(note)
             note.noteId = newNoteId
-            val noteTextDetail = noteTextDetailList.firstOrNull()
+            insertOrUpdateNoteTextDetail(noteTextDetail, newNoteId)
 
-            noteTextDetail?.let {
-                noteTextDetail.noteId = newNoteId
-                insertNoteTextDetail(noteTextDetail)
-            }
-
+//            noteImageDetailList.forEach {
+//                it.noteId = newNoteId
+//                insertImageTextDetail(it)
+//            }
         }
-
         return noteWithDetail
 
     }
+
+    @Transaction
+    suspend fun insertOrUpdateNoteTextDetail(noteTextDetail: NoteTextDetail?, noteId: Long) {
+        noteTextDetail ?: return
+        val noteTextDetailId = noteTextDetail.noteTextDetailId
+        noteTextDetail.noteId = noteId
+        if (noteTextDetailId != 0L) {
+            updateNoteTextDetail(noteTextDetail)
+        } else {
+            val newNoteTextDetailId = insertNoteTextDetail(noteTextDetail)
+            noteTextDetail.noteTextDetailId = newNoteTextDetailId
+        }
+    }
+
 
 }

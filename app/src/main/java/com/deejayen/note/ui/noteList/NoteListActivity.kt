@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.deejayen.note.database.NoteWithDetail
+import com.deejayen.note.database.entity.Note
 import com.deejayen.note.databinding.ActivityNoteListBinding
 import com.deejayen.note.ui.noteDetail.NoteDetailActivity
 import com.deejayen.note.util.ModelUtil
@@ -34,7 +35,7 @@ class NoteListActivity : DaggerAppCompatActivity() {
 
         noteListViewModel = ViewModelProvider(this, viewModelFactory)[NoteListViewModel::class.java]
 
-        noteListViewModel.getAllNoteWithDetail(this)
+        noteListViewModel.getAllNote(this)
 
         setUpRecyclerView()
 
@@ -56,10 +57,10 @@ class NoteListActivity : DaggerAppCompatActivity() {
     }
 
     private fun observerNoteListLivedata() {
-        noteListViewModel.notesWithDetailsList.observe(this) {
+        noteListViewModel.notesList.observe(this) {
             if (it != null) {
                 if (it.isNotEmpty()) {
-                    noteListRecyclerAdapter.setNoteWithDetailList(it as ArrayList<NoteWithDetail>)
+                    noteListRecyclerAdapter.setNoteWithDetailList(it as ArrayList<Note>)
                 }
             }
         }
@@ -78,15 +79,15 @@ class NoteListActivity : DaggerAppCompatActivity() {
         binding.noteListRecyclerView.adapter = noteListRecyclerAdapter
 
         noteListRecyclerAdapter.callback = object : (NoteListRecyclerAdapter.NoteListListener) {
-            override fun onClickNote(noteWithDetail: NoteWithDetail) {
-                intentToNoteDetail(noteWithDetail)
+            override fun onClickNote(note: Note) {
+                intentToNoteDetail(note)
             }
         }
     }
 
-    private fun intentToNoteDetail(noteWithDetail: NoteWithDetail? = null) {
+    private fun intentToNoteDetail(note: Note? = null) {
         val intent = Intent(this@NoteListActivity, NoteDetailActivity::class.java)
-        noteWithDetail?.let { intent.putExtra(ModelUtil.noteId, noteWithDetail.note.noteId) }
+        note?.let { intent.putExtra(ModelUtil.noteId, note.noteId) }
         startActivity(intent)
     }
 
