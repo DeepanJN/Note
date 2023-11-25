@@ -42,6 +42,9 @@ interface NoteDao {
 
     @Update
     suspend fun updateNoteTextDetail(noteTextDetail: NoteTextDetail)
+
+    @Update
+    suspend fun updateNoteImageDetail(noteImageDetail: NoteImageDetail)
     //endregion
 
     //region Delete
@@ -80,25 +83,32 @@ interface NoteDao {
 
         val noteId = note.noteId
         if (noteId != 0L) { // Update
-
             updateNote(note)
             insertOrUpdateNoteTextDetail(noteTextDetail, noteId)
-
+            noteImageDetailList.forEach { noteImageDetail ->
+                insertOrUpdateNoteImageDetail(noteImageDetail, noteId)
+            }
         } else {
-
-            // Insert
             val newNoteId = insertNote(note)
             note.noteId = newNoteId
             insertOrUpdateNoteTextDetail(noteTextDetail, newNoteId)
-
-//            noteImageDetailList.forEach {
-//                it.noteId = newNoteId
-//                insertImageTextDetail(it)
-//            }
+            noteImageDetailList.forEach { noteImageDetail ->
+                insertOrUpdateNoteImageDetail(noteImageDetail, newNoteId)
+            }
         }
         return noteWithDetail
-
     }
+
+    suspend fun insertOrUpdateNoteImageDetail(noteImageDetail: NoteImageDetail, noteId: Long) {
+        noteImageDetail.noteId = noteId
+        if (noteImageDetail.noteImageDetailId != 0L) {
+            updateNoteImageDetail(noteImageDetail)
+        } else {
+            val newNoteImageDetailId = insertImageTextDetail(noteImageDetail)
+            noteImageDetail.noteImageDetailId = newNoteImageDetailId
+        }
+    }
+
 
     @Transaction
     suspend fun insertOrUpdateNoteTextDetail(noteTextDetail: NoteTextDetail?, noteId: Long) {

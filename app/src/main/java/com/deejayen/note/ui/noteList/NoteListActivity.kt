@@ -21,7 +21,8 @@ class NoteListActivity : DaggerAppCompatActivity() {
     @Inject
     lateinit var noteListRecyclerAdapter: NoteListRecyclerAdapter
 
-    private lateinit var noteListViewModel: NoteListViewModel
+    @Inject
+    lateinit var noteListViewModel: NoteListViewModel
 
     private lateinit var binding: ActivityNoteListBinding
 
@@ -32,8 +33,6 @@ class NoteListActivity : DaggerAppCompatActivity() {
 
         binding = ActivityNoteListBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
-        noteListViewModel = ViewModelProvider(this, viewModelFactory)[NoteListViewModel::class.java]
 
         noteListViewModel.getAllNote(this)
 

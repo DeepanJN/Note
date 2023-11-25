@@ -36,13 +36,14 @@ import javax.inject.Inject
 
 class NoteDetailActivity : DaggerAppCompatActivity() {
 
-    @Inject
-    lateinit var viewModelFactory: ViewModelProvider.Factory
+//    @Inject
+//    lateinit var viewModelFactory: ViewModelProvider.Factory
 
     @Inject
     lateinit var picasso: Picasso
 
-    private lateinit var noteDetailViewModel: NoteDetailViewModel
+    @Inject
+    lateinit var noteDetailViewModel: NoteDetailViewModel
 
     private lateinit var binding: ActivityNoteDetailBinding
 
@@ -57,8 +58,6 @@ class NoteDetailActivity : DaggerAppCompatActivity() {
         binding = ActivityNoteDetailBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        noteDetailViewModel = ViewModelProvider(this, viewModelFactory)[NoteDetailViewModel::class.java]
-
         checkAndGetNoteId()
 
         setupOnClickListeners()
@@ -72,7 +71,19 @@ class NoteDetailActivity : DaggerAppCompatActivity() {
     override fun onBackPressed() {
         if (noteDetailViewModel.checkAnyUpdateJobIsActive()) {
             Toast.makeText(this@NoteDetailActivity.applicationContext, getString(R.string.saving_in_progress_please_wait), Toast.LENGTH_LONG).show()
+            return
         } else {
+            val selectedNoteWithDetail = noteDetailViewModel.selectedNoteWithDetail.value
+            if (selectedNoteWithDetail != null) {
+                val textNoteDetail = selectedNoteWithDetail.noteTextDetailList.firstOrNull()?.value
+                val note = selectedNoteWithDetail.note
+                val noteTitle = note?.title
+                val noteId = note?.noteId ?: 0L
+                if (noteTitle.isNullOrBlank() && textNoteDetail.isNullOrBlank() && selectedNoteWithDetail.noteImageDetailList.isEmpty() && noteId != 0L) {
+                    note?.let { noteDetailViewModel.deleteNote(it) }
+                }
+
+            }
             super.onBackPressed()
         }
 
@@ -99,16 +110,24 @@ class NoteDetailActivity : DaggerAppCompatActivity() {
     private suspend fun renderUi() {
         withContext(Dispatchers.Main) {
 
-            noteDetailViewModel.selectedNoteWithDetail.value?.let { noteWithDetail ->
+            val selectedNoteWithDetail = noteDetailViewModel.selectedNoteWithDetail.value
+            if (selectedNoteWithDetail != null) {
+
                 isFirstTimeHeadingUpdate = true
                 isFirstTimeContentUpdate = true
-                val note = noteWithDetail.note
-                val noteTextDetail = noteWithDetail.noteTextDetailList.firstOrNull()
-
+                val note = selectedNoteWithDetail.note
+                val noteTextDetail = selectedNoteWithDetail.noteTextDetailList.firstOrNull()
                 Log.d(TAG, " renderUi noteWithDetail ${note?.title} --- ${noteTextDetail?.value} ")
                 binding.noteDetailHeadingTextView.setText(note?.title ?: "")
                 binding.noteDetailContentEditText.setText(noteTextDetail?.value ?: "")
+                renderImageFileToView()
+
+            } else {
+                val noteWithDetail = NoteWithDetail()
+                noteWithDetail.note = Note(title = "")
+                noteDetailViewModel.insertOrUpdateNoteWithDetailList(noteWithDetail)
             }
+
         }
     }
 
@@ -229,16 +248,21 @@ class NoteDetailActivity : DaggerAppCompatActivity() {
                             val uri = clipData.getItemAt(i).uri
                             CoroutineScope(Dispatchers.IO).launch {
                                 val filePathArrayList = saveImageInBackground(uri)
-                                filePathArrayList?.let { renderImageFileToView(it) }
-                                //make save call
+                                filePathArrayList?.let {
+                                    noteDetailViewModel.saveImageFileToContent(it)
+                                    renderImageFileToView()
+                                }
+
                             }
                         }
                     } else if (intent.data != null) {
                         val uri = intent.data!!
                         CoroutineScope(Dispatchers.IO).launch {
                             val filePathArrayList = saveImageInBackground(uri)
-                            filePathArrayList?.let { renderImageFileToView(it) }
-                            //make save call
+                            filePathArrayList?.let {
+                                noteDetailViewModel.saveImageFileToContent(it)
+                                renderImageFileToView()
+                            }
                         }
                     }
                 }
@@ -280,9 +304,10 @@ class NoteDetailActivity : DaggerAppCompatActivity() {
         }
     }
 
-    suspend fun renderImageFileToView(vararg filePaths: String) {
+    suspend fun renderImageFileToView() {
 
-        filePaths.forEach { filePath ->
+        val noteImageDetailList = noteDetailViewModel.selectedNoteWithDetail.value?.noteImageDetailList
+        noteImageDetailList?.forEach { noteImageDetail ->
 
             val imageView = ImageView(this)
             imageView.layoutParams = LinearLayout.LayoutParams(
@@ -290,6 +315,14 @@ class NoteDetailActivity : DaggerAppCompatActivity() {
                 resources.dpToPx(100)
             )
 
+            withContext(Dispatchers.Main) {
+                imageView.setOnClickListener {
+                    noteDetailViewModel.deleteNoteImageDetail(noteImageDetail)
+                    binding.noteDetailScrollLinerLayout.removeView(imageView)
+                }
+            }
+
+            val filePath = noteImageDetail.value ?: ""
             val file = File(filePath)
             if (file.exists()) {
                 withContext(Dispatchers.Main) {

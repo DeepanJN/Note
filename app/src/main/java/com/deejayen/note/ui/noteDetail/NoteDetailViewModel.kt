@@ -3,11 +3,14 @@ package com.deejayen.note.ui.noteDetail
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.deejayen.note.database.NoteWithDetail
+import com.deejayen.note.database.entity.Note
 import com.deejayen.note.database.entity.NoteImageDetail
 import com.deejayen.note.repository.NoteRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class NoteDetailViewModel(private val noteRepository: NoteRepository) : ViewModel() {
@@ -42,12 +45,29 @@ class NoteDetailViewModel(private val noteRepository: NoteRepository) : ViewMode
             val arrListOfNoteDetail: ArrayList<NoteImageDetail> = arrayListOf()
             imageFilePath.forEach {
                 val note = selectedNoteWithDetail.value?.note
-                val noteId = note?.noteId ?: return@forEach
-                val noteDetail = NoteImageDetail(value = it, noteId = noteId)
-                arrListOfNoteDetail.add(noteDetail)
+                val noteId = note?.noteId
+                if (noteId != null) {
+                    val noteDetail = NoteImageDetail(value = it, noteId = noteId)
+                    arrListOfNoteDetail.add(noteDetail)
+                } else {
+                    //TODO Check
+                }
+
             }
             _selectedNoteWithDetail.value?.noteImageDetailList = arrListOfNoteDetail
             _selectedNoteWithDetail.value?.let { noteRepository.insertOrUpdateNoteWithDetail(it) }
+        }
+    }
+
+    fun deleteNote(note: Note) {
+        viewModelScope.launch(Dispatchers.IO) {
+            noteRepository.deleteNote(note)
+        }
+    }
+
+    fun deleteNoteImageDetail(noteImageDetail: NoteImageDetail) {
+        viewModelScope.launch(Dispatchers.IO) {
+            noteRepository.deleteNoteImageDetail(noteImageDetail)
         }
     }
 
