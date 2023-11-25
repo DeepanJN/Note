@@ -8,6 +8,7 @@
     tools:context=".ui.noteList.NoteListActivity">
 
     <LinearLayout
+        android:id="@+id/noteDetailToolBarLayout"
         android:layout_width="match_parent"
         android:layout_height="56dp"
         android:orientation="horizontal"
@@ -35,21 +36,28 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        app:layout_constraintTop_toBottomOf="@+id/noteDetailToolBarLayout">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <LinearLayout
-                android:id="@+id/noteDetailScrollImageView"
+            <HorizontalScrollView
+                android:id="@+id/noteDetailScrollView"
                 android:layout_width="match_parent"
-                android:layout_height="60dp"
-                android:orientation="horizontal"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/noteDetailBackPressButton" />
+                android:layout_height="100dp"
+                android:orientation="horizontal">
 
+                <LinearLayout
+                    android:id="@+id/noteDetailScrollLinerLayout"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/noteDetailBackPressButton" />
+
+            </HorizontalScrollView>
 
             <EditText
                 android:id="@+id/noteDetailHeadingTextView"

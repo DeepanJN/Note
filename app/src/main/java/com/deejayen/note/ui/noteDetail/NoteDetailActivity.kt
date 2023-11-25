@@ -1,26 +1,27 @@
 package com.deejayen.note.ui.noteDetail
 
-import android.content.Intent
-
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
+import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
-
 import com.deejayen.note.R
 import com.deejayen.note.database.NoteWithDetail
 import com.deejayen.note.database.entity.Note
-import com.deejayen.note.database.entity.NoteDetail
-import com.deejayen.note.database.entity.NoteType
+import com.deejayen.note.database.entity.NoteTextDetail
 import com.deejayen.note.databinding.ActivityNoteDetailBinding
 import com.deejayen.note.util.ModelUtil
+import com.deejayen.note.util.UIUtil.Companion.dpToPx
+import com.squareup.picasso.Picasso
 import dagger.android.support.DaggerAppCompatActivity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -29,12 +30,16 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileOutputStream
+import java.time.LocalDate
 import javax.inject.Inject
 
 class NoteDetailActivity : DaggerAppCompatActivity() {
 
     @Inject
     lateinit var viewModelFactory: ViewModelProvider.Factory
+
+    @Inject
+    lateinit var picasso: Picasso
 
     private lateinit var noteDetailViewModel: NoteDetailViewModel
 
@@ -73,12 +78,10 @@ class NoteDetailActivity : DaggerAppCompatActivity() {
     }
 
 
-    override fun onPause() {
-        super.onPause()
-        noteDetailViewModel.cancelHeadingTextUpdateJob()
-        noteDetailViewModel.cancelContentTextUpdateJob()
-
-    }
+//    override fun onPause() {
+//        super.onPause()
+//
+//    }
 
     private fun checkAndGetNoteId() {
         lifecycleScope.launch(Dispatchers.IO) {
@@ -87,9 +90,8 @@ class NoteDetailActivity : DaggerAppCompatActivity() {
 
             if (noteId == 0L) {
                 val note = Note()
-                val noteDetail = NoteDetail()
-                noteDetail.type = NoteType.TEXT
-                val noteWithDetail = NoteWithDetail(note, arrayListOf(noteDetail))
+                val noteTextDetail = NoteTextDetail()
+                val noteWithDetail = NoteWithDetail(note, listOf(noteTextDetail), listOf())
                 noteDetailViewModel.insertOrUpdateNoteWithDetailList(noteWithDetail)
                 return@launch
             }
@@ -108,7 +110,7 @@ class NoteDetailActivity : DaggerAppCompatActivity() {
         withContext(Dispatchers.Main) {
             noteDetailViewModel.selectedNoteWithDetail.value?.let { noteWithDetail ->
                 val note = noteWithDetail.note
-                val noteDetail = noteWithDetail.noteDetailList.firstOrNull { it.type == NoteType.TEXT }
+                val noteDetail = noteWithDetail.noteTextDetailList.firstOrNull()
                 binding.noteDetailHeadingTextView.setText(note.title ?: "")
                 binding.noteDetailContentEditText.setText(noteDetail?.value ?: "")
             }
@@ -164,7 +166,7 @@ class NoteDetailActivity : DaggerAppCompatActivity() {
                     delay(noteDetailViewModel.ON_TYPE_DELAY)
                     val newText: String = editable.toString()
                     val selectedNoteWithDetail = noteDetailViewModel.selectedNoteWithDetail.value
-                    val noteDetail = selectedNoteWithDetail?.noteDetailList?.firstOrNull { it.type == NoteType.TEXT }
+                    val noteDetail = selectedNoteWithDetail?.noteTextDetailList?.firstOrNull()
                     noteDetail?.value = newText
                     Log.d(TAG, "insertOrUpdateNoteWithDetailList noteDetailContentEditText $newText")
                     noteDetailViewModel.insertOrUpdateNoteWithDetailList(selectedNoteWithDetail)
@@ -209,13 +211,15 @@ class NoteDetailActivity : DaggerAppCompatActivity() {
                         for (i in 0 until clipData.itemCount) {
                             val uri = clipData.getItemAt(i).uri
                             CoroutineScope(Dispatchers.IO).launch {
-                                saveImageInBackground(uri)
+                                val filePathArrayList = saveImageInBackground(uri)
+                                filePathArrayList?.let { renderImageFileToView(it) }
                             }
                         }
                     } else if (intent.data != null) {
                         val uri = intent.data!!
                         CoroutineScope(Dispatchers.IO).launch {
-                            saveImageInBackground(uri)
+                            val filePathArrayList = saveImageInBackground(uri)
+                            filePathArrayList?.let { renderImageFileToView(it) }
                         }
                     }
                 }
@@ -224,10 +228,7 @@ class NoteDetailActivity : DaggerAppCompatActivity() {
 
 
     private fun checkPermission(): Boolean {
-        return ContextCompat.checkSelfPermission(
-            this,
-            Manifest.permission.READ_EXTERNAL_STORAGE
-        ) == PackageManager.PERMISSION_GRANTED
+        return ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
     }
 
     private fun requestPermission() {
@@ -244,20 +245,43 @@ class NoteDetailActivity : DaggerAppCompatActivity() {
     }
 
     private suspend fun saveImageInBackground(uri: android.net.Uri): String? {
-        withContext(Dispatchers.IO) {
-            val file = File(filesDir, "${System.currentTimeMillis()}.jpg")
-            val inputStream = contentResolver.openInputStream(uri)
-            inputStream?.use { input ->
-                FileOutputStream(file).use { output ->
-                    input.copyTo(output)
+        return try {
+            withContext(Dispatchers.IO) {
+                val file = File(filesDir, "${System.currentTimeMillis()}.jpg")
+                val inputStream = contentResolver.openInputStream(uri)
+                inputStream?.use { input ->
+                    FileOutputStream(file).use { output ->
+                        input.copyTo(output)
+                    }
                 }
+                return@withContext file.absolutePath
             }
-            return@withContext file.absolutePath
+        } catch (e: Exception) {
+            return null
         }
-        return null
     }
 
+    suspend fun renderImageFileToView(vararg filePaths: String) {
 
+        filePaths.forEach { filePath ->
+
+            val imageView = ImageView(this)
+            imageView.layoutParams = LinearLayout.LayoutParams(
+                resources.dpToPx(100),
+                resources.dpToPx(100)
+            )
+
+            val file = File(filePath)
+            if (file.exists()) {
+                withContext(Dispatchers.Main){
+                    picasso.load("file:$file").into(imageView)
+                    binding.noteDetailScrollLinerLayout.addView(imageView)
+                }
+
+            }
+        }
+
+    }
 
 
 }

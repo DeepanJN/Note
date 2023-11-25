@@ -2,17 +2,16 @@ package com.deejayen.note.database
 
 import androidx.room.Database
 import androidx.room.RoomDatabase
-import androidx.room.TypeConverters
 import com.deejayen.note.database.dao.NoteDao
 import com.deejayen.note.database.entity.Note
-import com.deejayen.note.database.entity.NoteDetail
-import com.deejayen.note.database.converter.NoteTypeConverter
+import com.deejayen.note.database.entity.NoteImageDetail
+import com.deejayen.note.database.entity.NoteTextDetail
 
 @Database(
-    entities = [Note::class, NoteDetail::class],
+    entities = [Note::class, NoteTextDetail::class, NoteImageDetail::class],
     version = 1
 )
-@TypeConverters(NoteTypeConverter::class)
+
 abstract class NoteDatabase : RoomDatabase() {
 
     abstract val noteDao: NoteDao

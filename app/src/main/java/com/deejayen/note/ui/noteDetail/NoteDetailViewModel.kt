@@ -4,8 +4,6 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.deejayen.note.database.NoteWithDetail
-import com.deejayen.note.database.entity.NoteDetail
-import com.deejayen.note.database.entity.NoteType
 import com.deejayen.note.repository.NoteRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job

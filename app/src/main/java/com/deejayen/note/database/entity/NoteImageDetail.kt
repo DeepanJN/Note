@@ -4,10 +4,6 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
 
-//enum class NoteType {
-//    TEXT, IMAGE, NOT_DEFINED
-//}
-
 @Entity(
     foreignKeys = [ForeignKey(
         entity = Note::class,
@@ -17,8 +13,8 @@ import androidx.room.PrimaryKey
     )]
 )
 
-data class NoteTextDetail(
-    @PrimaryKey(autoGenerate = true) var noteTextDetailId: Long = 0L,
+data class NoteImageDetail(
+    @PrimaryKey(autoGenerate = true) var noteImageDetailId: Long = 0L,
     var noteId: Long = 0L,
     var value: String? = null,
 )
