@@ -21,8 +21,6 @@ class NoteDetailViewModel(private val noteRepository: NoteRepository) : ViewMode
     private var _headingTextUpdateJob: Job? = null
     private var _contentTextUpdateJob: Job? = null
 
-    private var isFirstTime = false
-
     val ON_TYPE_DELAY: Long = 2000L // 2 seconds
 
     suspend fun insertOrUpdateNoteWithDetailList(noteWithDetail: NoteWithDetail?) {
@@ -42,20 +40,21 @@ class NoteDetailViewModel(private val noteRepository: NoteRepository) : ViewMode
     suspend fun saveImageFileToContent(vararg imageFilePath: String) {
         withContext(Dispatchers.IO) {
 
-            val arrListOfNoteDetail: ArrayList<NoteImageDetail> = arrayListOf()
+            val selectedNoteWithDetail = selectedNoteWithDetail.value
+            val noteImageDetailList: ArrayList<NoteImageDetail>? = selectedNoteWithDetail?.noteImageDetailList as? ArrayList<NoteImageDetail>
+            val note = selectedNoteWithDetail?.note
+            val noteId = note?.noteId
+
             imageFilePath.forEach {
-                val note = selectedNoteWithDetail.value?.note
-                val noteId = note?.noteId
                 if (noteId != null) {
                     val noteDetail = NoteImageDetail(value = it, noteId = noteId)
-                    arrListOfNoteDetail.add(noteDetail)
-                } else {
-                    //TODO Check
+                    noteImageDetailList?.add(noteDetail)
                 }
-
             }
-            _selectedNoteWithDetail.value?.noteImageDetailList = arrListOfNoteDetail
-            _selectedNoteWithDetail.value?.let { noteRepository.insertOrUpdateNoteWithDetail(it) }
+
+            selectedNoteWithDetail?.let {
+                _selectedNoteWithDetail.postValue(noteRepository.insertOrUpdateNoteWithDetail(it))
+            }
         }
     }
 
@@ -65,11 +64,6 @@ class NoteDetailViewModel(private val noteRepository: NoteRepository) : ViewMode
         }
     }
 
-    fun deleteNoteImageDetail(noteImageDetail: NoteImageDetail) {
-        viewModelScope.launch(Dispatchers.IO) {
-            noteRepository.deleteNoteImageDetail(noteImageDetail)
-        }
-    }
 
     fun setHeadingTextUpdateJob(job: Job) {
         _headingTextUpdateJob = job

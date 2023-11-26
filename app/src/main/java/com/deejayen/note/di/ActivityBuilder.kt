@@ -1,5 +1,7 @@
 package com.deejayen.note.di
 
+import com.deejayen.note.ui.imagePreview.ImagePreviewActivity
+import com.deejayen.note.ui.imagePreview.ImagePreviewActivityModule
 import com.deejayen.note.ui.noteDetail.NoteDetailActivity
 import com.deejayen.note.ui.noteDetail.NoteDetailActivityModule
 import com.deejayen.note.ui.noteList.NoteListActivity
@@ -16,5 +18,8 @@ abstract class ActivityBuilder {
 
     @ContributesAndroidInjector(modules = [NoteDetailActivityModule::class])
     abstract fun bindNoteDetailActivity(): NoteDetailActivity
+
+    @ContributesAndroidInjector(modules = [ImagePreviewActivityModule::class])
+    abstract fun bindImagePreviewActivity(): ImagePreviewActivity
 
 }

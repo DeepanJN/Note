@@ -12,14 +12,11 @@ class NoteListActivityModule {
     @Provides
     fun provideNoteListViewModel(noteRepository: NoteRepository): NoteListViewModel = NoteListViewModel(noteRepository)
 
+    @Provides
+    fun provideNoteListViewModelFactory(noteListViewModel: NoteListViewModel): ViewModelProvider.Factory = ViewModelProviderFactory(noteListViewModel)
 
     @Provides
-    fun provideNoteListViewModelFactory(noteListViewModel: NoteListViewModel):
-            ViewModelProvider.Factory = ViewModelProviderFactory(noteListViewModel)
-
-    @Provides
-    fun provideNoteListRecyclerAdapter():
-            NoteListRecyclerAdapter = NoteListRecyclerAdapter()
+    fun provideNoteListRecyclerAdapter(): NoteListRecyclerAdapter = NoteListRecyclerAdapter()
 
 }
 

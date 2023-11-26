@@ -2,8 +2,9 @@ package com.deejayen.note.ui.noteList
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
-import com.deejayen.note.database.NoteWithDetail
+import com.deejayen.note.R
 import com.deejayen.note.database.entity.Note
 import com.deejayen.note.databinding.ItemNoteListBinding
 
@@ -38,8 +39,19 @@ class NoteListRecyclerAdapter : RecyclerView.Adapter<NoteListRecyclerAdapter.Vie
     }
 
     inner class ViewHolder(val binding: ItemNoteListBinding) : RecyclerView.ViewHolder(binding.root) {
+
         fun renderView(note: Note) {
-            binding.itemNoteListTitleTv.text = note.title ?: ""
+            val itemNoteListTitleTv = binding.itemNoteListTitleTv
+            val context = itemNoteListTitleTv.context
+            var title = note.title
+            if (title.isNullOrBlank()) {
+                title = context.getString(R.string.empty)
+                itemNoteListTitleTv.setTextColor(ContextCompat.getColor(context, R.color.black20))
+            } else{
+                itemNoteListTitleTv.setTextColor(ContextCompat.getColor(context, R.color.black))
+            }
+            binding.itemNoteListTitleTv.text = title
+
         }
     }
 }

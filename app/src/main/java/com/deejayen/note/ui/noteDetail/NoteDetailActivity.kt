@@ -3,23 +3,23 @@ package com.deejayen.note.ui.noteDetail
 import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.icu.text.CaseMap.Title
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
+import android.view.View
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.deejayen.note.R
 import com.deejayen.note.database.NoteWithDetail
 import com.deejayen.note.database.entity.Note
 import com.deejayen.note.database.entity.NoteTextDetail
 import com.deejayen.note.databinding.ActivityNoteDetailBinding
+import com.deejayen.note.ui.imagePreview.ImagePreviewActivity
 import com.deejayen.note.util.ModelUtil
 import com.deejayen.note.util.UIUtil.Companion.dpToPx
 import com.squareup.picasso.Picasso
@@ -31,7 +31,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileOutputStream
-import java.time.LocalDate
 import javax.inject.Inject
 
 class NoteDetailActivity : DaggerAppCompatActivity() {
@@ -51,6 +50,20 @@ class NoteDetailActivity : DaggerAppCompatActivity() {
     private var isFirstTimeContentUpdate = false
 
     val TAG = "NoteDetailActivity"
+
+    val imagePreviewResult =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == RESULT_OK) {
+                val data: Intent? = result.data
+                lifecycleScope.launch {
+                    binding.noteDetailScrollLinerLayout.removeAllViews()
+                    renderImageFileToView()
+                }
+
+            } else if (result.resultCode == RESULT_CANCELED) {
+
+            }
+        }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -222,7 +235,7 @@ class NoteDetailActivity : DaggerAppCompatActivity() {
             }
         }
 
-        binding.noteDetailBackPressButton.setOnClickListener {
+        binding.noteDetailToolBarLayout.toolBarBackPressButton.setOnClickListener {
             this.onBackPressed()
         }
 
@@ -234,40 +247,39 @@ class NoteDetailActivity : DaggerAppCompatActivity() {
             if (isGranted) {
                 openGallery()
             } else {
-                Toast.makeText(this, "Permission denied. Please go to settings", Toast.LENGTH_LONG).show()
+                Toast.makeText(this, getString(R.string.permission_denied_go_to_settings), Toast.LENGTH_LONG).show()
             }
         }
 
-    private val getContentLauncher =
-        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-            if (result.resultCode == RESULT_OK) {
-                result.data?.let { intent ->
-                    val clipData = intent.clipData
-                    if (clipData != null) {
-                        for (i in 0 until clipData.itemCount) {
-                            val uri = clipData.getItemAt(i).uri
-                            CoroutineScope(Dispatchers.IO).launch {
-                                val filePathArrayList = saveImageInBackground(uri)
-                                filePathArrayList?.let {
-                                    noteDetailViewModel.saveImageFileToContent(it)
-                                    renderImageFileToView()
-                                }
-
-                            }
-                        }
-                    } else if (intent.data != null) {
-                        val uri = intent.data!!
+    private val getContentLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        if (result.resultCode == RESULT_OK) {
+            result.data?.let { intent ->
+                val clipData = intent.clipData
+                if (clipData != null) {
+                    for (i in 0 until clipData.itemCount) {
+                        val uri = clipData.getItemAt(i).uri
                         CoroutineScope(Dispatchers.IO).launch {
                             val filePathArrayList = saveImageInBackground(uri)
                             filePathArrayList?.let {
                                 noteDetailViewModel.saveImageFileToContent(it)
                                 renderImageFileToView()
                             }
+
+                        }
+                    }
+                } else if (intent.data != null) {
+                    val uri = intent.data!!
+                    CoroutineScope(Dispatchers.IO).launch {
+                        val filePathArrayList = saveImageInBackground(uri)
+                        filePathArrayList?.let {
+                            noteDetailViewModel.saveImageFileToContent(it)
+                            renderImageFileToView()
                         }
                     }
                 }
             }
         }
+    }
 
 
     private fun checkPermission(): Boolean {
@@ -304,30 +316,38 @@ class NoteDetailActivity : DaggerAppCompatActivity() {
         }
     }
 
-    suspend fun renderImageFileToView() {
+
+    suspend fun renderImageFileToView(removeAllView: Boolean = false) {
+
 
         val noteImageDetailList = noteDetailViewModel.selectedNoteWithDetail.value?.noteImageDetailList
-        noteImageDetailList?.forEach { noteImageDetail ->
-
-            val imageView = ImageView(this)
-            imageView.layoutParams = LinearLayout.LayoutParams(
-                resources.dpToPx(100),
-                resources.dpToPx(100)
-            )
-
-            withContext(Dispatchers.Main) {
-                imageView.setOnClickListener {
-                    noteDetailViewModel.deleteNoteImageDetail(noteImageDetail)
-                    binding.noteDetailScrollLinerLayout.removeView(imageView)
-                }
-            }
+        if (noteImageDetailList?.isNotEmpty() == true) {
+            binding.noteDetailScrollView.visibility = View.VISIBLE
+        } else {
+            binding.noteDetailScrollView.visibility = View.GONE
+            return
+        }
+        noteImageDetailList.forEach { noteImageDetail ->
 
             val filePath = noteImageDetail.value ?: ""
             val file = File(filePath)
             if (file.exists()) {
+
+                val imageView = ImageView(this)
+                imageView.layoutParams = LinearLayout.LayoutParams(
+                    resources.dpToPx(100),
+                    resources.dpToPx(100)
+                )
+
                 withContext(Dispatchers.Main) {
+                    imageView.setOnClickListener {
+                        val intent = Intent(this@NoteDetailActivity, ImagePreviewActivity::class.java)
+                        intent.putExtra(ModelUtil.noteImageDetailId, noteImageDetail.noteImageDetailId)
+                        imagePreviewResult.launch(intent)
+                    }
                     picasso.load("file:$file").into(imageView)
                     binding.noteDetailScrollLinerLayout.addView(imageView)
+
                 }
 
             }

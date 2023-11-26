@@ -4,8 +4,6 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import com.deejayen.note.database.NoteWithDetail
 import com.deejayen.note.database.entity.Note
 import com.deejayen.note.repository.NoteRepository
 

@@ -21,6 +21,15 @@ class NoteRepository @Inject constructor(private val noteDao: NoteDao) {
         return noteDao.getAllNote()
     }
 
+    fun getImageDetailsForNoteId(noteId: Long): LiveData<List<NoteImageDetail>> {
+        return noteDao.getImageDetailsForNoteId(noteId)
+    }
+
+    suspend fun getImageDetailForImageDetailId(noteImageDetailId: Long): NoteImageDetail? {
+        return noteDao.getImageDetailForImageDetailId(noteImageDetailId)
+    }
+
+
     suspend fun insertOrUpdateNoteWithDetail(noteWithDetail: NoteWithDetail): NoteWithDetail {
         return noteDao.insertOrUpdateNoteWithDetail(noteWithDetail)
     }

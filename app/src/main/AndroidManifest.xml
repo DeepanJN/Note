@@ -30,6 +30,10 @@
             android:name=".ui.noteDetail.NoteDetailActivity"
             android:exported="false" />
 
+        <activity
+            android:name=".ui.imagePreview.ImagePreviewActivity"
+            android:exported="false" />
+
     </application>
 
 </manifest>
