@@ -1,5 +1,7 @@
 # Note
 
+Android app with room DB, Coroutine, MVVM architecture
+
 `{
   "title": "",
   "contents": [
