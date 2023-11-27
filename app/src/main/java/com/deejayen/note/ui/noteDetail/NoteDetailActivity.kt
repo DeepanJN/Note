@@ -3,6 +3,7 @@ package com.deejayen.note.ui.noteDetail
 import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -21,7 +22,6 @@ import com.deejayen.note.database.entity.NoteTextDetail
 import com.deejayen.note.databinding.ActivityNoteDetailBinding
 import com.deejayen.note.ui.imagePreview.ImagePreviewActivity
 import com.deejayen.note.util.ModelUtil
-import com.deejayen.note.util.UIUtil.Companion.dpToPx
 import com.squareup.picasso.Picasso
 import dagger.android.support.DaggerAppCompatActivity
 import kotlinx.coroutines.Dispatchers
@@ -73,7 +73,7 @@ class NoteDetailActivity : DaggerAppCompatActivity() {
             if (result.resultCode == RESULT_OK) {
                 result.data?.let { intent ->
                     lifecycleScope.launch {
-                        handelIntent(intent)
+                        handelGalleryIntent(intent)
                     }
                 }
             }
@@ -127,7 +127,6 @@ class NoteDetailActivity : DaggerAppCompatActivity() {
 
     private suspend fun renderUi() {
         withContext(Dispatchers.Main) {
-
             val selectedNoteWithDetail = noteDetailViewModel.selectedNoteWithDetail.value
             if (selectedNoteWithDetail != null) {
 
@@ -246,7 +245,7 @@ class NoteDetailActivity : DaggerAppCompatActivity() {
     }
 
 
-    private suspend fun handelIntent(intent: Intent) {
+    private suspend fun handelGalleryIntent(intent: Intent) {
         withContext(Dispatchers.IO) {
             val clipData = intent.clipData
             if (clipData != null) {
@@ -255,7 +254,7 @@ class NoteDetailActivity : DaggerAppCompatActivity() {
                     val filePathArrayList = saveImageInBackground(uri)
                     filePathArrayList?.let {
                         noteDetailViewModel.saveImageFileToContent(it)
-                        renderImageToScrollView()
+                        renderImageToScrollView(true)
                     }
 
                 }
@@ -264,7 +263,7 @@ class NoteDetailActivity : DaggerAppCompatActivity() {
                 val filePathArrayList = saveImageInBackground(uri)
                 filePathArrayList?.let {
                     noteDetailViewModel.saveImageFileToContent(it)
-                    renderImageToScrollView()
+                    renderImageToScrollView(true)
                 }
 
             }
@@ -306,8 +305,11 @@ class NoteDetailActivity : DaggerAppCompatActivity() {
         }
     }
 
-    suspend fun renderImageToScrollView() {
+    suspend fun renderImageToScrollView(removeAllView: Boolean = false) {
         withContext(Dispatchers.Main) {
+            if (removeAllView){
+                binding.noteDetailScrollLinerLayout.removeAllViews()
+            }
             val noteImageDetailList = noteDetailViewModel.selectedNoteWithDetail.value?.noteImageDetailList
             if (noteImageDetailList.isNullOrEmpty()) {
                 binding.noteDetailScrollView.visibility = View.GONE
@@ -334,11 +336,23 @@ class NoteDetailActivity : DaggerAppCompatActivity() {
     private fun createImageView(file: File): ImageView? {
         try {
             val imageView = ImageView(this)
-            imageView.layoutParams = LinearLayout.LayoutParams(
-                resources.getDimension(R.dimen.image_thumbnail_size).toInt(),
-                resources.getDimension(R.dimen.image_thumbnail_size).toInt(),
-            )
+
+            val options = BitmapFactory.Options()
+            options.inJustDecodeBounds = true
+            BitmapFactory.decodeFile(file.absolutePath, options)
+            val imageWidth = options.outWidth
+            val imageHeight = options.outHeight
+
+            val aspectRatio = imageWidth.toFloat() / imageHeight.toFloat()
+            val thumbnailHeight = resources.getDimensionPixelSize(R.dimen.image_thumbnail_size)
+            val dynamicWidth = (thumbnailHeight * aspectRatio).toInt()
+
+            val layoutParams = LinearLayout.LayoutParams(dynamicWidth, thumbnailHeight)
+            layoutParams.setMargins(0, 0, resources.getDimensionPixelSize(R.dimen.image_padding), 0)
+            imageView.layoutParams = layoutParams
+
             picasso.load("file:$file").into(imageView)
+
             return imageView
         } catch (e: Exception) {
             Log.e(TAG, Log.getStackTraceString(e))
@@ -354,7 +368,6 @@ class NoteDetailActivity : DaggerAppCompatActivity() {
             imagePreviewResult.launch(intent)
         }
     }
-
 
 }
 
