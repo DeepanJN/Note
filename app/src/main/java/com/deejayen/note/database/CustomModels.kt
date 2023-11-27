@@ -12,10 +12,10 @@ data class NoteWithDetail(
     @Embedded var note: Note? = null,
 
     @Relation(parentColumn = "noteId", entityColumn = "noteId")
-    var noteTextDetailList: List<NoteTextDetail> = ArrayList(),
+    var noteTextDetailList: List<NoteTextDetail> = emptyList(),
 
     @Relation(parentColumn = "noteId", entityColumn = "noteId")
-    var noteImageDetailList: List<NoteImageDetail> = ArrayList(),
+    var noteImageDetailList: List<NoteImageDetail> = emptyList(),
 
     )
 

@@ -8,10 +8,9 @@ import com.deejayen.note.R
 import com.deejayen.note.database.entity.Note
 import com.deejayen.note.databinding.ItemNoteListBinding
 
-
 class NoteListRecyclerAdapter : RecyclerView.Adapter<NoteListRecyclerAdapter.ViewHolder>() {
 
-    val noteList: ArrayList<Note> = arrayListOf()
+    var noteList: List<Note> = emptyList()
     var callback: NoteListListener? = null
 
     interface NoteListListener {
@@ -24,33 +23,34 @@ class NoteListRecyclerAdapter : RecyclerView.Adapter<NoteListRecyclerAdapter.Vie
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        holder.renderView(noteList[position])
-        holder.binding.root.setOnClickListener {
-            callback?.onClickNote(noteList[position])
-        }
+        holder.bindView(noteList[position])
     }
 
     override fun getItemCount(): Int = noteList.size
 
-    fun setNoteWithDetailList(newNoteList: ArrayList<Note>) {
-        noteList.clear()
-        noteList.addAll(newNoteList)
+    fun setNoteWithDetailList(newNoteList: List<Note>) {
+        noteList = newNoteList
         notifyDataSetChanged()
     }
 
-    inner class ViewHolder(val binding: ItemNoteListBinding) : RecyclerView.ViewHolder(binding.root) {
+    inner class ViewHolder(private val binding: ItemNoteListBinding) : RecyclerView.ViewHolder(binding.root) {
 
-        fun renderView(note: Note) {
+        fun bindView(note: Note) {
             val itemNoteListTitleTv = binding.itemNoteListTitleTv
             val context = itemNoteListTitleTv.context
-            var title = note.title
-            if (title.isNullOrBlank()) {
-                title = context.getString(R.string.empty)
-                itemNoteListTitleTv.setTextColor(ContextCompat.getColor(context, R.color.black20))
-            } else{
-                itemNoteListTitleTv.setTextColor(ContextCompat.getColor(context, R.color.black))
+            val title = note.title ?: context.getString(R.string.empty)
+            val colorId = if (title.isBlank()) {
+                R.color.black20
+            } else {
+                R.color.black
             }
-            binding.itemNoteListTitleTv.text = title
+
+            itemNoteListTitleTv.text = title
+            itemNoteListTitleTv.setTextColor(ContextCompat.getColor(context, colorId))
+
+            binding.root.setOnClickListener {
+                callback?.onClickNote(note)
+            }
 
         }
     }

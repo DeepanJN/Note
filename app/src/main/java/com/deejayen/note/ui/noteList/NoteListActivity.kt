@@ -25,58 +25,37 @@ class NoteListActivity : DaggerAppCompatActivity() {
 
     private lateinit var binding: ActivityNoteListBinding
 
-    val TAG = "NoteListActivity"
+    private val TAG = "NoteListActivity"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         binding = ActivityNoteListBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
         noteListViewModel.getAllNote(this)
-
         setUpRecyclerView()
-
         setupClickListeners()
-
         observerNoteListLivedata()
-
-    }
-
-    override fun onResume() {
-        super.onResume()
-
     }
 
     private fun setupClickListeners() {
-        binding.addNoteFab.setOnClickListener {
-            intentToNoteDetail()
-        }
+        binding.addNoteFab.setOnClickListener { intentToNoteDetail() }
     }
 
     private fun observerNoteListLivedata() {
-        noteListViewModel.notesList.observe(this) {
-            if (it != null) {
-                if (it.isNotEmpty()) {
-                    noteListRecyclerAdapter.setNoteWithDetailList(it as ArrayList<Note>)
+        noteListViewModel.notesList.observe(this) { notes ->
+            if (notes != null) {
+                if (notes.isNotEmpty()) {
+                    noteListRecyclerAdapter.setNoteWithDetailList(notes)
                 }
             }
         }
     }
 
-    private fun addNewNote() {
-//        lifecycleScope.launch(Dispatchers.IO) {
-//            noteListViewModel.insertOrUpdateNoteWithDetailList(arrayListOf(MockDataUtil.getMockNoteWithDetail()))
-//
-//        }
-    }
-
     private fun setUpRecyclerView() {
-
         binding.noteListRecyclerView.layoutManager = LinearLayoutManager(this, RecyclerView.VERTICAL, false)
         binding.noteListRecyclerView.adapter = noteListRecyclerAdapter
-
-        noteListRecyclerAdapter.callback = object : (NoteListRecyclerAdapter.NoteListListener) {
+        noteListRecyclerAdapter.callback = object : NoteListRecyclerAdapter.NoteListListener {
             override fun onClickNote(note: Note) {
                 intentToNoteDetail(note)
             }
@@ -85,9 +64,7 @@ class NoteListActivity : DaggerAppCompatActivity() {
 
     private fun intentToNoteDetail(note: Note? = null) {
         val intent = Intent(this@NoteListActivity, NoteDetailActivity::class.java)
-        note?.let { intent.putExtra(ModelUtil.noteId, note.noteId) }
+        note?.let { intent.putExtra(ModelUtil.noteId, it.noteId) }
         startActivity(intent)
     }
-
 }
-

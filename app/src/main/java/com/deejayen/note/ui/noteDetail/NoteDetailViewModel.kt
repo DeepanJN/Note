@@ -15,6 +15,7 @@ import kotlinx.coroutines.withContext
 
 class NoteDetailViewModel(private val noteRepository: NoteRepository) : ViewModel() {
 
+    var noteId = 0L
     private var _selectedNoteWithDetail = MutableLiveData<NoteWithDetail>()
     val selectedNoteWithDetail: LiveData<NoteWithDetail> get() = _selectedNoteWithDetail
 
@@ -31,7 +32,7 @@ class NoteDetailViewModel(private val noteRepository: NoteRepository) : ViewMode
         }
     }
 
-    suspend fun getNoteWithDetailsByNoteId(noteId: Long) {
+    suspend fun getNoteWithDetailsByNoteId() {
         withContext(Dispatchers.IO) {
             _selectedNoteWithDetail.postValue(noteRepository.getNoteWithDetailsByNoteId(noteId))
         }

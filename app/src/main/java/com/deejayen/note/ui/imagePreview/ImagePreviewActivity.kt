@@ -1,6 +1,7 @@
 package com.deejayen.note.ui.imagePreview
 
 import android.os.Bundle
+import android.util.Log
 import androidx.lifecycle.lifecycleScope
 import com.deejayen.note.database.entity.NoteImageDetail
 import com.deejayen.note.databinding.ActivityImagePreviewBinding
@@ -23,6 +24,8 @@ class ImagePreviewActivity : DaggerAppCompatActivity() {
 
     private lateinit var binding: ActivityImagePreviewBinding
 
+    val TAG = "ImagePreviewActivity"
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -34,35 +37,44 @@ class ImagePreviewActivity : DaggerAppCompatActivity() {
         lifecycleScope.launch(Dispatchers.IO) {
             val noteImageDetail = imagePreviewViewModel.getImageDetailForImageDetailId()
             renderImage(noteImageDetail)
-            setupOnClickListeners(noteImageDetail)
+            withContext(Dispatchers.Main){
+                setupOnClickListeners(noteImageDetail)
+            }
         }
-
-
     }
 
-    private suspend fun setupOnClickListeners(noteImageDetail: NoteImageDetail?) {
+
+    private fun setupOnClickListeners(noteImageDetail: NoteImageDetail?) {
         noteImageDetail ?: return
-        withContext(Dispatchers.Main) {
-            binding.previewImageDeleteButton.setOnClickListener {
-                imagePreviewViewModel.deleteNoteImageDetail(noteImageDetail)
-                setResult(RESULT_OK)
-                onBackPressedDispatcher.onBackPressed()
-            }
+        binding.previewImageDeleteButton.setOnClickListener {
+            handleDeleteImageDetail(noteImageDetail)
         }
     }
 
     private suspend fun renderImage(noteImageDetail: NoteImageDetail?) {
         val imageFilePath = noteImageDetail?.value
         val file = imageFilePath?.let { File(it) }
-        if (file?.exists() == true) {
-            withContext(Dispatchers.Main) {
-                val imageView = binding.previewImageView
-                picasso.load("file:$file").into(imageView)
+
+        try {
+            if (file?.exists() == true) {
+                withContext(Dispatchers.Main) {
+                    loadPreviewImage(file)
+                }
             }
-        } else {
-            //Error occurred file sending file
+        } catch (e: Exception) {
+            Log.e(TAG, Log.getStackTraceString(e))
         }
     }
 
+    private fun loadPreviewImage(file: File) {
+        val imageView = binding.previewImageView
+        picasso.load("file:$file").into(imageView)
+    }
+
+    private fun handleDeleteImageDetail(noteImageDetail: NoteImageDetail) {
+        imagePreviewViewModel.deleteNoteImageDetail(noteImageDetail)
+        setResult(RESULT_OK)
+        finish()
+    }
 
 }
