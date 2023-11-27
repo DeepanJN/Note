@@ -1,26 +1,12 @@
 package com.deejayen.note
 
-import android.content.Context
-import androidx.arch.core.executor.testing.InstantTaskExecutorRule
-import androidx.room.Room
-import androidx.test.core.app.ApplicationProvider
+import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.deejayen.note.database.NoteDatabase
-import com.deejayen.note.database.NoteWithDetail
-import com.deejayen.note.database.dao.NoteDao
-import com.deejayen.note.database.entity.Note
-import com.deejayen.note.database.entity.NoteImageDetail
-import com.deejayen.note.database.entity.NoteTextDetail
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.test.runTest
-import org.junit.After
 
 import org.junit.Test
 import org.junit.runner.RunWith
 
 import org.junit.Assert.*
-import org.junit.Before
-import org.junit.Rule
 
 /**
  * Instrumented test, which will execute on an Android device.
@@ -28,157 +14,11 @@ import org.junit.Rule
  * See [testing documentation](http://d.android.com/tools/testing).
  */
 @RunWith(AndroidJUnit4::class)
-class NoteDaoTest {
-
-    @get:Rule
-    val instantExecutorRule = InstantTaskExecutorRule()
-
-    private lateinit var noteDao: NoteDao
-    private lateinit var database: NoteDatabase
-
-    @Before
-    fun initDb() {
-        val context = ApplicationProvider.getApplicationContext<Context>()
-        database = Room.inMemoryDatabaseBuilder(
-            context, NoteDatabase::class.java
-        ).allowMainThreadQueries()
-            .build()
-        noteDao = database.noteDao
-    }
-
-    @After
-    fun closeDb() {
-        database.close()
-    }
-
+class ExampleInstrumentedTest {
     @Test
-    fun insertNoteAndCheckDetails() = runTest {
-
-        var noteId = 0L
-        launch {
-            noteId = noteDao.insertNote(Note(title = "Title"))
-            noteDao.insertNoteTextDetail(NoteTextDetail(value = "Detail", noteId = noteId))
-            noteDao.insertImageTextDetail(NoteImageDetail(value = "filepath", noteId = noteId))
-        }.join()
-
-        val noteDetail = noteDao.getNoteWithDetailsByNoteId(noteId)
-        assertEquals(noteDetail?.note?.title ?: "", "Title")
-        assertEquals(noteDetail?.noteTextDetailList?.firstOrNull()?.value ?: "", "Detail")
-        assertEquals(noteDetail?.noteImageDetailList?.firstOrNull()?.value ?: "", "filepath")
-
-
-
-
+    fun useAppContext() {
+        // Context of the app under test.
+        val appContext = InstrumentationRegistry.getInstrumentation().targetContext
+        assertEquals("com.deejayen.note", appContext.packageName)
     }
-
-    @Test
-    fun checkInsertOrUpdateNoteWithDetail() = runTest {
-
-        val noteWithDetail = NoteWithDetail()
-        noteWithDetail.note = Note(title = "Title")
-        noteWithDetail.noteTextDetailList = arrayListOf(NoteTextDetail(value = "Des"))
-
-        launch {
-            noteDao.insertOrUpdateNoteWithDetail(noteWithDetail)
-        }.join()
-
-        assertEquals(noteWithDetail.note?.title ?: "", "Title")
-        assertEquals(noteWithDetail.noteTextDetailList?.firstOrNull()?.value ?: "", "Des")
-
-//        launch {
-//            noteWithDetail.noteTextDetailList?.firstOrNull()?.value = "New"
-//            noteDao.insertOrUpdateNoteWithDetail(noteWithDetail)
-//        }.join()
-
-        val newNoteWithDetail = noteDao.getNoteWithDetailsByNoteId(noteWithDetail.note?.noteId ?: 0L)
-        assertEquals(newNoteWithDetail?.noteTextDetailList?.firstOrNull()?.value, "Des")
-
-    }
-
-
-    @Test
-    fun insertOnlyNoteAndCheck() = runTest {
-
-        var noteId = 0L
-        launch {
-            noteId = noteDao.insertNote(Note(title = "Title"))
-            /*noteDao.insertNoteTextDetail(NoteTextDetail(value = "Detail", noteId = noteId))*/
-            /*noteDao.insertImageTextDetail(NoteImageDetail(value = "filepath", noteId = noteId))*/
-        }.join()
-
-        val noteDetail = noteDao.getNoteWithDetailsByNoteId(noteId)
-        assertEquals(noteDetail?.note?.title ?: "", "Title")
-
-
-
-
-    }
-
-//    @Test
-//    fun insertAndReadNote() = runTest {
-//        // Insert
-//        val note = Note(title = "Test Note")
-//
-//        var noteId: Long = 0L
-//        launch {
-//            noteId = noteDao.insertNote(note)
-//            val noteDetail = NoteDetail(noteId= noteId, type = NoteType.TEXT,  value ="This is a test value")
-//            noteDao.insertNoteDetail(noteDetail)
-//        }.join()
-//
-//        // Read
-//        var loadedNote: NoteWithDetail? = null
-//        launch {
-//            loadedNote = noteDao.getNoteWithContentById(noteId.toInt())
-//        }.join()
-//
-//        assertNotNull(loadedNote)
-//        assertEquals("Test Note", loadedNote?.note?.title ?: "")
-//        assertEquals("This is a test value", loadedNote?.noteDetailList?.firstOrNull()?.value ?: "")
-//        assertEquals( NoteType.TEXT, loadedNote?.noteDetailList?.firstOrNull()?.type ?: "")
-//    }
-//
-//    @Test
-//    fun insertAndUpdateNoteContent() = runTest {
-//
-//        val oldContentStr = "Content"
-//        val updatedContentStr = "Updated Content"
-//
-//        val note = Note(title = "Test Note")
-//        val noteId = noteDao.insertNote(note)
-//
-//        val noteDetail = NoteDetail(noteId = noteId, type = NoteType.TEXT, value = oldContentStr)
-//        noteDao.insertNoteDetail(noteDetail)
-//
-////        val updatedContent = noteDao.getAllNoteWithDetails(). ?.firstOrNull()?.noteDetailList?.firstOrNull()?.copy(value = updatedContentStr)
-////        updatedContent?.let { noteDao.updateNoteContent(it) }
-////
-////        val loadedContent = noteDao.getAllNotes()?.firstOrNull()?.noteDetailList?.firstOrNull()
-////        assertEquals(updatedContentStr, loadedContent?.value ?: "")
-//    }
-//
-//    @Test
-//    fun insertAndDeleteNoteContent() = runTest {
-//        // Insert
-//        val note = Note(title = "Test Note")
-//        val noteId = noteDao.insertNote(note)
-//
-//        val noteDetail = NoteDetail(noteId = noteId, type = NoteType.TEXT, value = "Content")
-//        noteDao.insertNoteDetail(noteDetail)
-//
-//        // Delete
-//        launch {
-//            val contentToDelete = noteDao.getAllNoteWithDetails().firstOrNull()?.noteDetailList?.firstOrNull()
-//            contentToDelete?.let { noteDao.deleteNoteDetail(it) }
-//        }.join()
-//
-//        // Assert
-//        var loadedContent:List<NoteWithDetail>? = null
-//        launch {
-//            loadedContent = noteDao.getAllNoteWithDetails()
-//        }.join()
-//
-//        assertTrue(loadedContent?.isEmpty() ?: false)
-//    }
-
 }

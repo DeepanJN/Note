@@ -35,12 +35,8 @@ interface NoteDao {
     @Query("SELECT * FROM NoteImageDetail WHERE NoteImageDetail.noteImageDetailId = :noteImageDetailId ")
     suspend fun getImageDetailForImageDetailId(noteImageDetailId: Long): NoteImageDetail?
 
-//    @Transaction
-//    @Query("SELECT * FROM Note INNER JOIN NoteTextDetail ON Note.noteId = NoteTextDetail.noteId GROUP BY Note.noteId")
-//    fun getAllNoteWithDetail(): LiveData<List<NoteWithDetail>>
-
-    @Query("SELECT * FROM Note WHERE Note.noteId = :noteId")
-    fun getNoteWithDetailsByNoteId(noteId: Long): NoteWithDetail?
+    @Query("SELECT * FROM Note WHERE Note.noteId = :noteId ")
+    suspend fun getNoteWithDetailsByNoteId(noteId: Long): NoteWithDetail?
 
     //endregion
 
