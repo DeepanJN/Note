@@ -33,8 +33,12 @@ class NoteRepositoryTest {
     private lateinit var database: NoteDatabase
 
     companion object {
-        const val TEST_TITLE = "TEST_TITLE"
-        const val TEST_DESCRIPTION = "TEST_DESCRIPTION"
+        const val TITLE = "Title of the note"
+        const val UPDATED_TITLE = "updated Title of a note"
+        const val DESCRIPTION = "This is a note description"
+        const val UPDATED_DESCRIPTION = "Updated note description"
+        const val FILE_PATH_ONE = "data/user/first_image.png"
+        const val FILE_PATH_TWO = "data/user/second_image.png"
     }
 
     @Before
@@ -53,55 +57,32 @@ class NoteRepositoryTest {
     }
 
     @Test
-    fun testBasicInsertForAllTables() = runTest {
+    fun testInsertOrUpdateNoteWithImageDetail() = runTest {
 
-        var noteId = 0L
+        var noteWithDetail: NoteWithDetail? = null
         launch {
-            noteId = noteDao.insertNote(Note(title = "Title"))
-            noteDao.insertNoteTextDetail(NoteTextDetail(value = "Detail", noteId = noteId))
-            noteDao.insertImageTextDetail(NoteImageDetail(value = "filepath/", noteId = noteId))
+            val noteTextDetail = listOf(NoteTextDetail(value = DESCRIPTION))
+            val noteImageDetailList = listOf(NoteImageDetail(value = FILE_PATH_ONE), NoteImageDetail(value = FILE_PATH_TWO))
+            noteWithDetail = NoteWithDetail(Note(title = TITLE), noteTextDetail, noteImageDetailList)
+            noteDao.insertOrUpdateNoteWithDetail(noteWithDetail!!)
         }.join()
 
-        val noteDetail = noteDao.getNoteWithDetailsByNoteId(noteId)
-        assertEquals(noteDetail?.note?.title ?: "", "Title")
-        assertEquals(noteDetail?.noteTextDetailList?.firstOrNull()?.value ?: "", "Detail")
-        assertEquals(noteDetail?.noteImageDetailList?.firstOrNull()?.value ?: "", "filepath/")
-    }
+        noteWithDetail = noteDao.getNoteWithDetailsByNoteId(noteWithDetail?.note?.noteId ?: 0L)
+        assertEquals(noteWithDetail?.note?.title ?: "", TITLE)
+        assertEquals(noteWithDetail?.noteTextDetailList?.firstOrNull()?.value ?: "", DESCRIPTION)
+        assertEquals(noteWithDetail?.noteImageDetailList?.firstOrNull()?.value ?: "", FILE_PATH_ONE)
+        assertEquals(noteWithDetail?.noteImageDetailList?.lastOrNull()?.value ?: "", FILE_PATH_TWO)
 
-
-    @Test
-    fun checkInsertOrUpdateNoteWithDetail() = runTest {
-
-        val noteWithDetail = NoteWithDetail()
-        noteWithDetail.note = Note(title = TEST_TITLE)
-        noteWithDetail.noteTextDetailList = arrayListOf(NoteTextDetail(value = TEST_DESCRIPTION))
+        //Update
+        noteWithDetail?.note?.title = UPDATED_TITLE
+        noteWithDetail?.noteTextDetailList?.firstOrNull()?.value = UPDATED_DESCRIPTION
 
         launch {
-            noteDao.insertOrUpdateNoteWithDetail(noteWithDetail)
+            noteWithDetail = noteDao.insertOrUpdateNoteWithDetail(noteWithDetail!!)
         }.join()
 
-        val noteId = noteWithDetail.note?.noteId
-
-        val updatedNoteDetail = noteId?.let { noteDao.getNoteWithDetailsByNoteId(it) }
-        assertEquals(updatedNoteDetail?.note?.title ?: "", TEST_TITLE)
-        assertEquals(updatedNoteDetail?.noteTextDetailList?.firstOrNull()?.value ?: "", TEST_DESCRIPTION)
-
-    }
-
-
-    @Test
-    fun checkInsertNote() = runTest {
-
-        var noteId = 0L
-        launch {
-            noteId = noteDao.insertNote(Note(title = TEST_TITLE))
-            noteDao.insertNoteTextDetail(NoteTextDetail(value = "Detail", noteId = noteId))
-            /*noteDao.insertImageTextDetail(NoteImageDetail(value = "filepath", noteId = noteId))*/
-        }.join()
-
-        val noteDetail = noteDao.getNoteWithDetailsByNoteId(noteId)
-        assertEquals(noteDetail?.note?.title ?: "", "Title")
-        assertEquals(noteDetail?.noteTextDetailList?.firstOrNull()?.value ?: "", "Title")
+        assertEquals(noteWithDetail?.note?.title ?: "", UPDATED_TITLE)
+        assertEquals(noteWithDetail?.noteTextDetailList?.firstOrNull()?.value ?: "", UPDATED_DESCRIPTION)
 
     }
 
@@ -110,23 +91,46 @@ class NoteRepositoryTest {
 
         var noteId = 0L
         launch {
-            val note = Note(title = TEST_TITLE)
-            noteId = noteDao.insertNote(note)
-            val noteTextDetail = NoteTextDetail(value = TEST_DESCRIPTION, noteId = noteId)
-            val noteWithDetail = NoteWithDetail(note, listOf(noteTextDetail), listOf())
-            noteDao.insertOrUpdateNoteWithDetail(noteWithDetail)
+            val note = Note(title = TITLE)
+            val noteTextDetail = NoteTextDetail(value = DESCRIPTION)
+            var noteWithDetail = NoteWithDetail(note, listOf(noteTextDetail), listOf())
+            noteWithDetail = noteDao.insertOrUpdateNoteWithDetail(noteWithDetail)
+            noteId = noteWithDetail.note?.noteId ?: 0L
         }.join()
 
-
-        var updatedNoteWithDetail:NoteWithDetail? = null
+        var updatedNoteWithDetail: NoteWithDetail? = null
         launch {
             updatedNoteWithDetail = noteDao.getNoteWithDetailsByNoteId(noteId)
         }.join()
 
-        assertEquals(updatedNoteWithDetail?.note?.title ?: "", TEST_TITLE)
-        assertEquals(updatedNoteWithDetail?.noteTextDetailList?.firstOrNull()?.value ?: "", TEST_DESCRIPTION)
+        assertEquals(updatedNoteWithDetail?.note?.title ?: "", TITLE)
+        assertEquals(updatedNoteWithDetail?.noteTextDetailList?.firstOrNull()?.value ?: "", DESCRIPTION)
+
+    }
+
+    @Test
+    fun testInsertNoteAndImageDetail() = runTest {
+
+        var noteId = 0L
+        launch {
+            val note = Note(title = TITLE)
+            val noteImageDetailList = arrayListOf(NoteImageDetail(value = FILE_PATH_ONE), NoteImageDetail(value = FILE_PATH_TWO))
+            var noteWithDetail = NoteWithDetail(note, listOf(), noteImageDetailList)
+            noteWithDetail = noteDao.insertOrUpdateNoteWithDetail(noteWithDetail)
+            noteId = noteWithDetail.note?.noteId ?: 0L
+        }.join()
+
+        var updatedNoteWithDetail: NoteWithDetail? = null
+        launch {
+            updatedNoteWithDetail = noteDao.getNoteWithDetailsByNoteId(noteId)
+        }.join()
+
+        assertEquals(updatedNoteWithDetail?.note?.title ?: "", TITLE)
+        assertEquals(updatedNoteWithDetail?.noteImageDetailList?.firstOrNull()?.value ?: "", FILE_PATH_ONE)
+        assertEquals(updatedNoteWithDetail?.noteImageDetailList?.lastOrNull()?.value ?: "", FILE_PATH_TWO)
 
 
     }
+
 
 }

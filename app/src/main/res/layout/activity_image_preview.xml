@@ -13,7 +13,8 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-        <ImageView
+        <ImageButton
+            style="?attr/materialIconButtonFilledStyle"
             android:id="@+id/previewToolBarBackPressButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -24,7 +25,8 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
-        <ImageView
+        <ImageButton
+            style="?attr/materialIconButtonFilledStyle"
             android:id="@+id/previewImageDeleteButton"
             android:layout_width="wrap_content"
             android:layout_height="48dp"

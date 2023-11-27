@@ -4,4 +4,8 @@
     <string name="saving_in_progress_please_wait">Saving in progress, Please wait</string>
     <string name="empty">(Empty)</string>
     <string name="permission_denied_go_to_settings">"Permission denied. Please go to settings and Change"</string>
+    <string name="delete_image">Delete Image</string>
+    <string name="are_you_sure_you_want_to_delete_image">Are you sure you want to delete image?</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
 </resources>

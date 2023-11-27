@@ -3,9 +3,11 @@ package com.deejayen.note.ui.imagePreview
 import android.os.Bundle
 import android.util.Log
 import androidx.lifecycle.lifecycleScope
+import com.deejayen.note.R
 import com.deejayen.note.database.entity.NoteImageDetail
 import com.deejayen.note.databinding.ActivityImagePreviewBinding
 import com.deejayen.note.util.ModelUtil
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.squareup.picasso.Picasso
 import dagger.android.support.DaggerAppCompatActivity
 import kotlinx.coroutines.Dispatchers
@@ -36,22 +38,42 @@ class ImagePreviewActivity : DaggerAppCompatActivity() {
 
         lifecycleScope.launch(Dispatchers.IO) {
             val noteImageDetail = imagePreviewViewModel.getImageDetailForImageDetailId()
-            renderImage(noteImageDetail)
-            withContext(Dispatchers.Main){
-                setupOnClickListeners(noteImageDetail)
+            renderImage()
+            withContext(Dispatchers.Main) {
+                setupOnClickListeners()
             }
         }
     }
 
 
-    private fun setupOnClickListeners(noteImageDetail: NoteImageDetail?) {
-        noteImageDetail ?: return
+    private fun setupOnClickListeners() {
+        val noteImageDetail = imagePreviewViewModel.noteImageDetail ?: return
         binding.previewImageDeleteButton.setOnClickListener {
-            handleDeleteImageDetail(noteImageDetail)
+            showDeleteConfirmationDialog(noteImageDetail)
+        }
+
+        binding.previewToolBarBackPressButton.setOnClickListener {
+            finish()
         }
     }
 
-    private suspend fun renderImage(noteImageDetail: NoteImageDetail?) {
+    private fun showDeleteConfirmationDialog(noteImageDetail: NoteImageDetail) {
+        MaterialAlertDialogBuilder(this).apply {
+            setTitle(getString(R.string.delete_image))
+            setMessage(getString(R.string.are_you_sure_you_want_to_delete_image))
+            setPositiveButton(getString(R.string.yes)) { _, _ ->
+                handleDeleteImageDetail(noteImageDetail)
+            }
+            setNegativeButton(getString(R.string.no)) { dialog, _ ->
+                dialog.dismiss()
+            }
+            show()
+        }
+
+    }
+
+    private suspend fun renderImage() {
+        val noteImageDetail = imagePreviewViewModel.noteImageDetail
         val imageFilePath = noteImageDetail?.value
         val file = imageFilePath?.let { File(it) }
 

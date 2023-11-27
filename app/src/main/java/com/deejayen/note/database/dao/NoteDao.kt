@@ -68,7 +68,6 @@ interface NoteDao {
         val note = noteWithDetail.note
         val noteDetails = noteWithDetail.noteTextDetailList.firstOrNull()
         note?.let { deleteNote(it) }
-        //TODO:Check cascade delete working properly
     }
 
     suspend fun insertOrUpdateNoteWithDetailList(noteWithDetailList: ArrayList<NoteWithDetail>): ArrayList<NoteWithDetail> {
@@ -115,8 +114,8 @@ interface NoteDao {
 
 
     @Transaction
-    suspend fun insertOrUpdateNoteTextDetail(noteTextDetail: NoteTextDetail?, noteId: Long) {
-        noteTextDetail ?: return
+    suspend fun insertOrUpdateNoteTextDetail(noteTextDetail: NoteTextDetail?, noteId: Long): NoteTextDetail? {
+        noteTextDetail ?: return null
         val noteTextDetailId = noteTextDetail.noteTextDetailId
         noteTextDetail.noteId = noteId
         if (noteTextDetailId != 0L) {
@@ -125,6 +124,7 @@ interface NoteDao {
             val newNoteTextDetailId = insertNoteTextDetail(noteTextDetail)
             noteTextDetail.noteTextDetailId = newNoteTextDetailId
         }
+        return noteTextDetail
     }
 
 
