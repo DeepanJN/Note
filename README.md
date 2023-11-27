@@ -1,6 +1,6 @@
 # Note
 
-Android app with room DB, Coroutine, MVVM architecture
+Android app with room DB, Coroutine, MVVM architecture, Dagger
 
 `{
   "title": "",
