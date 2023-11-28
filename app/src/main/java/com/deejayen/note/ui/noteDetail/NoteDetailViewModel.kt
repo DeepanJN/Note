@@ -41,21 +41,22 @@ class NoteDetailViewModel(private val noteRepository: NoteRepository) : ViewMode
     suspend fun saveImageFileToContent(vararg imageFilePath: String) {
         withContext(Dispatchers.IO) {
 
-            val selectedNoteWithDetail = selectedNoteWithDetail.value
-            val noteImageDetailList: ArrayList<NoteImageDetail>? = selectedNoteWithDetail?.noteImageDetailList as? ArrayList<NoteImageDetail>
-            val note = selectedNoteWithDetail?.note
-            val noteId = note?.noteId
+            var selectedNoteWithDetail = selectedNoteWithDetail.value
 
+            if (selectedNoteWithDetail == null) {
+                selectedNoteWithDetail = NoteWithDetail(Note())
+            }
+            val noteImageDetailList: ArrayList<NoteImageDetail> = selectedNoteWithDetail.noteImageDetailList as? ArrayList<NoteImageDetail> ?: arrayListOf()
+            val note = selectedNoteWithDetail.note
+            val noteId = note?.noteId ?: 0L
             imageFilePath.forEach {
-                if (noteId != null) {
-                    val noteDetail = NoteImageDetail(value = it, noteId = noteId)
-                    noteImageDetailList?.add(noteDetail)
-                }
+                val noteDetail = NoteImageDetail(value = it, noteId = noteId)
+                noteImageDetailList.add(noteDetail)
             }
+            selectedNoteWithDetail.noteImageDetailList = noteImageDetailList
 
-            selectedNoteWithDetail?.let {
-                _selectedNoteWithDetail.postValue(noteRepository.insertOrUpdateNoteWithDetail(it))
-            }
+            _selectedNoteWithDetail.postValue(noteRepository.insertOrUpdateNoteWithDetail(selectedNoteWithDetail))
+
         }
     }
 

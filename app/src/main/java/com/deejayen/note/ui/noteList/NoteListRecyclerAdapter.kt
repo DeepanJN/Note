@@ -38,13 +38,13 @@ class NoteListRecyclerAdapter : RecyclerView.Adapter<NoteListRecyclerAdapter.Vie
         fun bindView(note: Note) {
             val itemNoteListTitleTv = binding.itemNoteListTitleTv
             val context = itemNoteListTitleTv.context
-            val title = note.title ?: context.getString(R.string.empty)
-            val colorId = if (title.isBlank()) {
+            var title = note.title
+            val colorId = if (title.isNullOrBlank()) {
+                title = context.getString(R.string.no_title)
                 R.color.black20
             } else {
                 R.color.black
             }
-
             itemNoteListTitleTv.text = title
             itemNoteListTitleTv.setTextColor(ContextCompat.getColor(context, colorId))
 
