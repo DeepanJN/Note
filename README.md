@@ -1,6 +1,9 @@
 # Note
 
-Android app with room DB, Coroutine, MVVM architecture, Dagger
+Pros: Fully functional Note app with Room DB, Coroutines, and MVVM architecture, Dagger dependency injection.
+
+Limitations: This app doesn't use Jetpack Compose and does not follow strict Clean Architecture principles.
+
 
 `{
   "title": "",
