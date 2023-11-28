@@ -1,8 +1,8 @@
 # Note
 
-Pros: Fully functional Note app with Room DB, Coroutines, and MVVM architecture, Dagger dependency injection.
+> Pros: Fully functional Note app with Room DB, Coroutines, and MVVM architecture, Dagger dependency injection.
 
-Limitations: This app doesn't use Jetpack Compose and does not follow strict Clean Architecture principles.
+> Limitations: This app doesn't use Jetpack Compose and does not follow strict Clean Architecture principles.
 
 
 `{
