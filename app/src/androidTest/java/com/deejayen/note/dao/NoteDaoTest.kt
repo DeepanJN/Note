@@ -1,4 +1,4 @@
-package com.deejayen.note.repository
+package com.deejayen.note.dao
 
 import android.content.Context
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
@@ -24,7 +24,7 @@ import org.junit.runner.RunWith
 
 @MediumTest
 @RunWith(AndroidJUnit4::class)
-class NoteRepositoryTest {
+class NoteDaoTest {
 
     @get:Rule
     val instantExecutorRule = InstantTaskExecutorRule()
