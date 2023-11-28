@@ -2,6 +2,7 @@ package com.deejayen.note.ui.noteList
 
 import android.content.Intent
 import android.os.Bundle
+import android.view.View
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -42,16 +43,6 @@ class NoteListActivity : DaggerAppCompatActivity() {
         binding.addNoteFab.setOnClickListener { intentToNoteDetail() }
     }
 
-    private fun observerNoteListLivedata() {
-        noteListViewModel.notesList.observe(this) { notes ->
-            if (notes != null) {
-                if (notes.isNotEmpty()) {
-                    noteListRecyclerAdapter.setNoteWithDetailList(notes)
-                }
-            }
-        }
-    }
-
     private fun setUpRecyclerView() {
         binding.noteListRecyclerView.layoutManager = LinearLayoutManager(this, RecyclerView.VERTICAL, false)
         binding.noteListRecyclerView.adapter = noteListRecyclerAdapter
@@ -62,9 +53,36 @@ class NoteListActivity : DaggerAppCompatActivity() {
         }
     }
 
+    private fun observerNoteListLivedata() {
+        noteListViewModel.notesList.observe(this) { notes ->
+            if (notes != null) {
+                if (notes.isNotEmpty()) {
+                    hideNoDataViews()
+                    noteListRecyclerAdapter.setNoteWithDetailList(notes)
+                } else {
+                    showNoDataViews()
+                }
+            }
+        }
+    }
+
     private fun intentToNoteDetail(note: Note? = null) {
         val intent = Intent(this@NoteListActivity, NoteDetailActivity::class.java)
         note?.let { intent.putExtra(ModelUtil.noteId, it.noteId) }
         startActivity(intent)
+    }
+
+    private fun hideNoDataViews() {
+        binding.noteListQuoteTv.visibility = View.GONE
+        binding.noteListHintTv.visibility = View.GONE
+        binding.noteListWelcomeTextView.visibility = View.VISIBLE
+        binding.noteListRecyclerView.visibility = View.VISIBLE
+    }
+
+    private fun showNoDataViews() {
+        binding.noteListQuoteTv.visibility = View.VISIBLE
+        binding.noteListHintTv.visibility = View.VISIBLE
+        binding.noteListWelcomeTextView.visibility = View.GONE
+        binding.noteListRecyclerView.visibility = View.GONE
     }
 }

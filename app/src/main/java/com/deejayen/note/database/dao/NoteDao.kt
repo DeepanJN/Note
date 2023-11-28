@@ -62,14 +62,14 @@ interface NoteDao {
     suspend fun deleteNoteImageDetail(noteImageDetail: NoteImageDetail)
 
     //endregion
-
-    //Delete image files before deleting the entry
+    @Transaction
     suspend fun deleteNoteWithDetail(noteWithDetail: NoteWithDetail) {
         val note = noteWithDetail.note
         val noteDetails = noteWithDetail.noteTextDetailList.firstOrNull()
         note?.let { deleteNote(it) }
     }
 
+    @Transaction
     suspend fun insertOrUpdateNoteWithDetailList(noteWithDetailList: ArrayList<NoteWithDetail>): ArrayList<NoteWithDetail> {
         noteWithDetailList.forEach {
             insertOrUpdateNoteWithDetail(it)
@@ -102,6 +102,7 @@ interface NoteDao {
         return noteWithDetail
     }
 
+    @Transaction
     suspend fun insertOrUpdateNoteImageDetail(noteImageDetail: NoteImageDetail, noteId: Long) {
         noteImageDetail.noteId = noteId
         if (noteImageDetail.noteImageDetailId != 0L) {
@@ -111,7 +112,6 @@ interface NoteDao {
             noteImageDetail.noteImageDetailId = newNoteImageDetailId
         }
     }
-
 
     @Transaction
     suspend fun insertOrUpdateNoteTextDetail(noteTextDetail: NoteTextDetail?, noteId: Long): NoteTextDetail? {

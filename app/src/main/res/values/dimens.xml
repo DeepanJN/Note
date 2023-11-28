@@ -3,4 +3,5 @@
     <dimen name="toolbar_height">56dp</dimen>
     <dimen name="image_thumbnail_size">300dp</dimen>
     <dimen name="image_padding">8dp</dimen>
+    <dimen name="description_min_height">300dp</dimen>
 </resources>
