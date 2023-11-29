@@ -13,22 +13,14 @@ import javax.inject.Singleton
 
 @Singleton
 class NoteRepository @Inject constructor(private val noteDao: NoteDao) {
-//    fun getAllNoteWithDetail(): LiveData<List<NoteWithDetail>> {
-//        return noteDao.getAllNoteWithDetail()
-//    }
 
     fun getAllNote(): LiveData<List<Note>> {
         return noteDao.getAllNote()
     }
 
-    fun getImageDetailsForNoteId(noteId: Long): LiveData<List<NoteImageDetail>> {
-        return noteDao.getImageDetailsForNoteId(noteId)
-    }
-
     suspend fun getImageDetailForImageDetailId(noteImageDetailId: Long): NoteImageDetail? {
         return noteDao.getImageDetailForImageDetailId(noteImageDetailId)
     }
-
 
     suspend fun insertOrUpdateNoteWithDetail(noteWithDetail: NoteWithDetail): NoteWithDetail {
         return noteDao.insertOrUpdateNoteWithDetail(noteWithDetail)

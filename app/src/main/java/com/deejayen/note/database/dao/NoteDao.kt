@@ -28,10 +28,6 @@ interface NoteDao {
     fun getAllNote(): LiveData<List<Note>>
 
     @Transaction
-    @Query("SELECT * FROM NoteImageDetail LEFT JOIN Note on Note.noteId = NoteImageDetail.noteId WHERE Note.noteId = :noteId ")
-    fun getImageDetailsForNoteId(noteId: Long): LiveData<List<NoteImageDetail>>
-
-    @Transaction
     @Query("SELECT * FROM NoteImageDetail WHERE NoteImageDetail.noteImageDetailId = :noteImageDetailId ")
     suspend fun getImageDetailForImageDetailId(noteImageDetailId: Long): NoteImageDetail?
 

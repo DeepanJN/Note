@@ -132,5 +132,30 @@ class NoteDaoTest {
 
     }
 
+    @Test
+    fun testDeleteNoteWithDetail() = runTest {
+
+        var noteWithDetail: NoteWithDetail? = null
+        launch {
+            val noteTextDetail = listOf(NoteTextDetail(value = DESCRIPTION))
+            val noteImageDetailList = listOf(NoteImageDetail(value = FILE_PATH_ONE), NoteImageDetail(value = FILE_PATH_TWO))
+            noteWithDetail = NoteWithDetail(Note(title = TITLE), noteTextDetail, noteImageDetailList)
+            noteDao.insertOrUpdateNoteWithDetail(noteWithDetail!!)
+        }.join()
+
+        noteWithDetail = noteDao.getNoteWithDetailsByNoteId(noteWithDetail?.note?.noteId ?: 0L)
+
+        launch {
+            noteWithDetail?.note?.let { noteDao.deleteNote(it) }
+        }.join()
+
+        val result = noteDao.getNoteWithDetailsByNoteId(noteWithDetail?.note?.noteId ?: 0L)
+
+        assertEquals(result, null)
+        assertEquals(noteDao.getAllNote().value, null)
+
+    }
+
+
 
 }
