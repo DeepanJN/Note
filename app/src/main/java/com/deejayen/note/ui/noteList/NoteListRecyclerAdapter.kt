@@ -15,6 +15,7 @@ class NoteListRecyclerAdapter : RecyclerView.Adapter<NoteListRecyclerAdapter.Vie
 
     interface NoteListListener {
         fun onClickNote(note: Note)
+        fun onLongClick(note: Note)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -50,6 +51,11 @@ class NoteListRecyclerAdapter : RecyclerView.Adapter<NoteListRecyclerAdapter.Vie
 
             binding.root.setOnClickListener {
                 callback?.onClickNote(note)
+            }
+
+            binding.root.setOnLongClickListener {
+                callback?.onLongClick(note)
+                true
             }
 
         }

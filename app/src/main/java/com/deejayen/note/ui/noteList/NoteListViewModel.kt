@@ -4,8 +4,11 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.deejayen.note.database.entity.Note
 import com.deejayen.note.repository.NoteRepository
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class NoteListViewModel(private val noteRepository: NoteRepository) : ViewModel() {
 
@@ -19,5 +22,10 @@ class NoteListViewModel(private val noteRepository: NoteRepository) : ViewModel(
         }
     }
 
+    fun deleteNote(note: Note) {
+        viewModelScope.launch(Dispatchers.IO) {
+            noteRepository.deleteNote(note)
+        }
+    }
 
 }

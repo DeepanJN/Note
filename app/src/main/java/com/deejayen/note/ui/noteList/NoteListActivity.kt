@@ -6,10 +6,13 @@ import android.view.View
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.deejayen.note.R
 import com.deejayen.note.database.entity.Note
 import com.deejayen.note.databinding.ActivityNoteListBinding
 import com.deejayen.note.ui.noteDetail.NoteDetailActivity
 import com.deejayen.note.util.ModelUtil
+import com.deejayen.note.util.UIUtil
+import com.deejayen.note.util.UIUtil.Companion.showMaterialAlertDialog
 import dagger.android.support.DaggerAppCompatActivity
 import javax.inject.Inject
 
@@ -49,6 +52,16 @@ class NoteListActivity : DaggerAppCompatActivity() {
         noteListRecyclerAdapter.callback = object : NoteListRecyclerAdapter.NoteListListener {
             override fun onClickNote(note: Note) {
                 intentToNoteDetail(note)
+            }
+
+            override fun onLongClick(note: Note) {
+                this@NoteListActivity.showMaterialAlertDialog(
+                    R.string.delete_note, R.string.delete_note_description
+                ) { isPositive ->
+                    if (isPositive) {
+                        note.let { noteListViewModel.deleteNote(it) }
+                    }
+                }
             }
         }
     }

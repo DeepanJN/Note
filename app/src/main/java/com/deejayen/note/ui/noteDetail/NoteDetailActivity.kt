@@ -9,6 +9,7 @@ import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
 import android.view.View
+import android.widget.EditText
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.Toast
@@ -22,6 +23,7 @@ import com.deejayen.note.database.entity.NoteTextDetail
 import com.deejayen.note.databinding.ActivityNoteDetailBinding
 import com.deejayen.note.ui.imagePreview.ImagePreviewActivity
 import com.deejayen.note.util.ModelUtil
+import com.deejayen.note.util.UIUtil.Companion.setupAfterTextChangedListener
 import com.squareup.picasso.Picasso
 import dagger.android.support.DaggerAppCompatActivity
 import kotlinx.coroutines.Dispatchers
@@ -149,83 +151,64 @@ class NoteDetailActivity : DaggerAppCompatActivity() {
 
     private fun setupOnTextChangeListeners() {
 
-        binding.noteDetailHeadingTextView.addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(charSequence: CharSequence?, start: Int, before: Int, count: Int) {
-                //
+        binding.noteDetailHeadingTextView.setupAfterTextChangedListener { editable ->
+            if (isFirstTimeHeadingUpdate) {
+                isFirstTimeHeadingUpdate = false
+                return@setupAfterTextChangedListener
             }
-
-            override fun onTextChanged(charSequence: CharSequence?, start: Int, before: Int, count: Int) {
-                //
-            }
-
-            override fun afterTextChanged(editable: Editable?) {
-                if (isFirstTimeHeadingUpdate) {
-                    isFirstTimeHeadingUpdate = false
-                    return
+            noteDetailViewModel.cancelHeadingTextUpdateJob()
+            val job = lifecycleScope.launch(Dispatchers.Main) {
+                delay(noteDetailViewModel.ON_TYPE_DELAY)
+                Log.d(TAG, "afterTextChanged HeadingET")
+                val newText: String = editable.toString()
+                var selectedNoteWithDetail = noteDetailViewModel.selectedNoteWithDetail.value
+                val note = selectedNoteWithDetail?.note
+                if (note != null) {
+                    note.title = newText
+                } else {
+                    val newNote = Note(title = newText)
+                    selectedNoteWithDetail?.note = newNote
+                    selectedNoteWithDetail = NoteWithDetail(note = newNote)
                 }
-                noteDetailViewModel.cancelHeadingTextUpdateJob()
-                val job = lifecycleScope.launch(Dispatchers.Main) {
-                    delay(noteDetailViewModel.ON_TYPE_DELAY)
-                    Log.d(TAG, "afterTextChanged HeadingET")
-                    val newText: String = editable.toString()
-                    var selectedNoteWithDetail = noteDetailViewModel.selectedNoteWithDetail.value
-                    val note = selectedNoteWithDetail?.note
-                    if (note != null) {
-                        note.title = newText
-                    } else {
-                        val newNote = Note(title = newText)
-                        selectedNoteWithDetail?.note = newNote
-                        selectedNoteWithDetail = NoteWithDetail(note = newNote)
+
+                noteDetailViewModel.insertOrUpdateNoteWithDetailList(selectedNoteWithDetail)
+                Log.d(TAG, "insertOrUpdateNoteWithDetailList noteDetailHeadingTextView $newText")
+
+            }
+            noteDetailViewModel.setHeadingTextUpdateJob(job)
+        }
+
+        binding.noteDetailContentEditText.setupAfterTextChangedListener { editable ->
+            if (isFirstTimeContentUpdate) {
+                isFirstTimeContentUpdate = false
+                return@setupAfterTextChangedListener
+            }
+            noteDetailViewModel.cancelContentTextUpdateJob()
+            val job = lifecycleScope.launch(Dispatchers.Main) {
+                delay(noteDetailViewModel.ON_TYPE_DELAY)
+                Log.d(TAG, "afterTextChanged DescriptionET")
+                val newText: String = editable.toString()
+                var selectedNoteWithDetail = noteDetailViewModel.selectedNoteWithDetail.value
+                var note = selectedNoteWithDetail?.note
+                var noteTextDetail = selectedNoteWithDetail?.noteTextDetailList?.firstOrNull()
+                if (note != null && noteTextDetail != null) {
+                    noteTextDetail.value = newText
+                } else {
+                    if (note == null) {
+                        note = Note()
                     }
-
-                    noteDetailViewModel.insertOrUpdateNoteWithDetailList(selectedNoteWithDetail)
-                    Log.d(TAG, "insertOrUpdateNoteWithDetailList noteDetailHeadingTextView $newText")
-
-                }
-                noteDetailViewModel.setHeadingTextUpdateJob(job)
-            }
-        })
-
-        binding.noteDetailContentEditText.addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(charSequence: CharSequence?, start: Int, before: Int, count: Int) {
-                //
-            }
-
-            override fun onTextChanged(charSequence: CharSequence?, start: Int, before: Int, count: Int) {
-                //
-            }
-
-            override fun afterTextChanged(editable: Editable?) {
-                if (isFirstTimeContentUpdate) {
-                    isFirstTimeContentUpdate = false
-                    return
-                }
-                noteDetailViewModel.cancelContentTextUpdateJob()
-                val job = lifecycleScope.launch(Dispatchers.Main) {
-                    delay(noteDetailViewModel.ON_TYPE_DELAY)
-                    Log.d(TAG, "afterTextChanged DescriptionET")
-                    val newText: String = editable.toString()
-                    var selectedNoteWithDetail = noteDetailViewModel.selectedNoteWithDetail.value
-                    var note = selectedNoteWithDetail?.note
-                    var noteTextDetail = selectedNoteWithDetail?.noteTextDetailList?.firstOrNull()
-                    if (note != null && noteTextDetail != null) {
-                        noteTextDetail.value = newText
-                    } else {
-                        if (note == null) {
-                            note = Note()
-                        }
-                        if (noteTextDetail == null) {
-                            noteTextDetail = NoteTextDetail(value = newText)
-                        }
-                        selectedNoteWithDetail = NoteWithDetail(note, arrayListOf(noteTextDetail))
+                    if (noteTextDetail == null) {
+                        noteTextDetail = NoteTextDetail(value = newText)
                     }
-
-                    Log.d(TAG, "insertOrUpdateNoteWithDetailList noteDetailContentEditText $newText")
-                    noteDetailViewModel.insertOrUpdateNoteWithDetailList(selectedNoteWithDetail)
+                    selectedNoteWithDetail = NoteWithDetail(note, arrayListOf(noteTextDetail))
                 }
-                noteDetailViewModel.setContentTextUpdateJob(job)
+
+                Log.d(TAG, "insertOrUpdateNoteWithDetailList noteDetailContentEditText $newText")
+                noteDetailViewModel.insertOrUpdateNoteWithDetailList(selectedNoteWithDetail)
             }
-        })
+            noteDetailViewModel.setContentTextUpdateJob(job)
+        }
+
     }
 
     private fun setupOnClickListeners() {
@@ -307,7 +290,7 @@ class NoteDetailActivity : DaggerAppCompatActivity() {
 
     suspend fun renderImageToScrollView(removeAllView: Boolean = false) {
         withContext(Dispatchers.Main) {
-            if (removeAllView){
+            if (removeAllView) {
                 binding.noteDetailScrollLinerLayout.removeAllViews()
             }
             val noteImageDetailList = noteDetailViewModel.selectedNoteWithDetail.value?.noteImageDetailList

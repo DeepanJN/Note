@@ -5,6 +5,8 @@
     <string name="no_title">(No Title)</string>
     <string name="permission_denied_go_to_settings">Permission denied. Please go to settings and Change</string>
     <string name="delete_image">Delete Image</string>
+    <string name="delete_note">Delete Note</string>
+    <string name="delete_note_description">Are you sure you want to this delete note?</string>
     <string name="are_you_sure_you_want_to_delete_image">Are you sure you want to delete image?</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>
