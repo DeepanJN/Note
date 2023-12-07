@@ -19,10 +19,7 @@ class NoteDetailViewModel(private val noteRepository: NoteRepository) : ViewMode
     private var _selectedNoteWithDetail = MutableLiveData<NoteWithDetail>()
     val selectedNoteWithDetail: LiveData<NoteWithDetail> get() = _selectedNoteWithDetail
 
-    private var _headingTextUpdateJob: Job? = null
-    private var _contentTextUpdateJob: Job? = null
-
-    val ON_TYPE_DELAY: Long = 2000L // 2 seconds
+    val ON_TYPE_DELAY: Long = 600L
 
     suspend fun insertOrUpdateNoteWithDetailList(noteWithDetail: NoteWithDetail?) {
         withContext(Dispatchers.IO) {
@@ -40,25 +37,18 @@ class NoteDetailViewModel(private val noteRepository: NoteRepository) : ViewMode
 
     suspend fun saveImageFileToContent(vararg imageFilePath: String) {
         withContext(Dispatchers.IO) {
-
-            var selectedNoteWithDetail = selectedNoteWithDetail.value
-
-            if (selectedNoteWithDetail == null) {
-                selectedNoteWithDetail = NoteWithDetail(Note())
-            }
-            val noteImageDetailList: ArrayList<NoteImageDetail> = selectedNoteWithDetail.noteImageDetailList as? ArrayList<NoteImageDetail> ?: arrayListOf()
-            val note = selectedNoteWithDetail.note
-            val noteId = note?.noteId ?: 0L
+            val currentNoteWithDetail = selectedNoteWithDetail.value ?: NoteWithDetail(Note())
+            val noteImageDetailList = currentNoteWithDetail.noteImageDetailList.toMutableList()
+            val noteId = currentNoteWithDetail.note?.noteId ?: 0L
             imageFilePath.forEach {
                 val noteDetail = NoteImageDetail(value = it, noteId = noteId)
                 noteImageDetailList.add(noteDetail)
             }
-            selectedNoteWithDetail.noteImageDetailList = noteImageDetailList
-
-            _selectedNoteWithDetail.postValue(noteRepository.insertOrUpdateNoteWithDetail(selectedNoteWithDetail))
-
+            currentNoteWithDetail.noteImageDetailList = noteImageDetailList
+            insertOrUpdateNoteWithDetailList(currentNoteWithDetail)
         }
     }
+
 
     fun deleteNote(note: Note) {
         viewModelScope.launch(Dispatchers.IO) {
@@ -66,24 +56,4 @@ class NoteDetailViewModel(private val noteRepository: NoteRepository) : ViewMode
         }
     }
 
-
-    fun setHeadingTextUpdateJob(job: Job) {
-        _headingTextUpdateJob = job
-    }
-
-    fun cancelHeadingTextUpdateJob() {
-        _headingTextUpdateJob?.cancel()
-    }
-
-    fun setContentTextUpdateJob(job: Job) {
-        _contentTextUpdateJob = job
-    }
-
-    fun cancelContentTextUpdateJob() {
-        _contentTextUpdateJob?.cancel()
-    }
-
-    fun checkAnyUpdateJobIsActive(): Boolean {
-        return _headingTextUpdateJob?.isActive ?: false || _contentTextUpdateJob?.isActive ?: false
-    }
 }

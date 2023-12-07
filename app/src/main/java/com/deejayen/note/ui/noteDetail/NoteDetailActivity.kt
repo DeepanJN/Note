@@ -5,11 +5,8 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.BitmapFactory
 import android.os.Bundle
-import android.text.Editable
-import android.text.TextWatcher
 import android.util.Log
 import android.view.View
-import android.widget.EditText
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.Toast
@@ -27,6 +24,7 @@ import com.deejayen.note.util.UIUtil.Companion.setupAfterTextChangedListener
 import com.squareup.picasso.Picasso
 import dagger.android.support.DaggerAppCompatActivity
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -41,6 +39,9 @@ class NoteDetailActivity : DaggerAppCompatActivity() {
 
     @Inject
     lateinit var noteDetailViewModel: NoteDetailViewModel
+
+    private var headingTextUpdateJob: Job? = null
+    private var contentTextUpdateJob: Job? = null
 
     private lateinit var binding: ActivityNoteDetailBinding
 
@@ -96,7 +97,7 @@ class NoteDetailActivity : DaggerAppCompatActivity() {
     }
 
     override fun onBackPressed() {
-        if (noteDetailViewModel.checkAnyUpdateJobIsActive()) {
+        if (checkAnyUpdateJobIsActive()) {
             Toast.makeText(this@NoteDetailActivity.applicationContext, getString(R.string.saving_in_progress_please_wait), Toast.LENGTH_LONG).show()
             return
         } else {
@@ -156,7 +157,7 @@ class NoteDetailActivity : DaggerAppCompatActivity() {
                 isFirstTimeHeadingUpdate = false
                 return@setupAfterTextChangedListener
             }
-            noteDetailViewModel.cancelHeadingTextUpdateJob()
+            headingTextUpdateJob?.cancel()
             val job = lifecycleScope.launch(Dispatchers.Main) {
                 delay(noteDetailViewModel.ON_TYPE_DELAY)
                 Log.d(TAG, "afterTextChanged HeadingET")
@@ -175,7 +176,7 @@ class NoteDetailActivity : DaggerAppCompatActivity() {
                 Log.d(TAG, "insertOrUpdateNoteWithDetailList noteDetailHeadingTextView $newText")
 
             }
-            noteDetailViewModel.setHeadingTextUpdateJob(job)
+            headingTextUpdateJob = job
         }
 
         binding.noteDetailContentEditText.setupAfterTextChangedListener { editable ->
@@ -183,7 +184,7 @@ class NoteDetailActivity : DaggerAppCompatActivity() {
                 isFirstTimeContentUpdate = false
                 return@setupAfterTextChangedListener
             }
-            noteDetailViewModel.cancelContentTextUpdateJob()
+            contentTextUpdateJob?.cancel()
             val job = lifecycleScope.launch(Dispatchers.Main) {
                 delay(noteDetailViewModel.ON_TYPE_DELAY)
                 Log.d(TAG, "afterTextChanged DescriptionET")
@@ -206,7 +207,7 @@ class NoteDetailActivity : DaggerAppCompatActivity() {
                 Log.d(TAG, "insertOrUpdateNoteWithDetailList noteDetailContentEditText $newText")
                 noteDetailViewModel.insertOrUpdateNoteWithDetailList(selectedNoteWithDetail)
             }
-            noteDetailViewModel.setContentTextUpdateJob(job)
+            contentTextUpdateJob = job
         }
 
     }
@@ -350,6 +351,10 @@ class NoteDetailActivity : DaggerAppCompatActivity() {
             }
             imagePreviewResult.launch(intent)
         }
+    }
+
+    fun checkAnyUpdateJobIsActive(): Boolean {
+        return headingTextUpdateJob?.isActive ?: false || contentTextUpdateJob?.isActive ?: false
     }
 
 }
