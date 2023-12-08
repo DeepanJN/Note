@@ -4,6 +4,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.deejayen.note.R
@@ -11,9 +12,10 @@ import com.deejayen.note.database.entity.Note
 import com.deejayen.note.databinding.ActivityNoteListBinding
 import com.deejayen.note.ui.noteDetail.NoteDetailActivity
 import com.deejayen.note.util.ModelUtil
-import com.deejayen.note.util.UIUtil
 import com.deejayen.note.util.UIUtil.Companion.showMaterialAlertDialog
 import dagger.android.support.DaggerAppCompatActivity
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 class NoteListActivity : DaggerAppCompatActivity() {
@@ -36,7 +38,7 @@ class NoteListActivity : DaggerAppCompatActivity() {
         binding = ActivityNoteListBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        noteListViewModel.getAllNote(this)
+        noteListViewModel.getAllNote()
         setUpRecyclerView()
         setupClickListeners()
         observerNoteListLivedata()
@@ -59,7 +61,11 @@ class NoteListActivity : DaggerAppCompatActivity() {
                     R.string.delete_note, R.string.delete_note_description
                 ) { isPositive ->
                     if (isPositive) {
-                        note.let { noteListViewModel.deleteNote(it) }
+                        note.let {
+                            lifecycleScope.launch(Dispatchers.IO) {
+                                noteListViewModel.deleteNote(it)
+                            }
+                        }
                     }
                 }
             }

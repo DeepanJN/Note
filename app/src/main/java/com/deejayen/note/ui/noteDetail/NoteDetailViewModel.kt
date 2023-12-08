@@ -9,7 +9,6 @@ import com.deejayen.note.database.entity.Note
 import com.deejayen.note.database.entity.NoteImageDetail
 import com.deejayen.note.repository.NoteRepository
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -18,8 +17,6 @@ class NoteDetailViewModel(private val noteRepository: NoteRepository) : ViewMode
     var noteId = 0L
     private var _selectedNoteWithDetail = MutableLiveData<NoteWithDetail>()
     val selectedNoteWithDetail: LiveData<NoteWithDetail> get() = _selectedNoteWithDetail
-
-    val ON_TYPE_DELAY: Long = 600L
 
     suspend fun insertOrUpdateNoteWithDetailList(noteWithDetail: NoteWithDetail?) {
         withContext(Dispatchers.IO) {

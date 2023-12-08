@@ -6,6 +6,8 @@ class ModelUtil {
         const val noteId = "noteId"
         const val noteImageDetailId = "noteImageDetailId"
 
+        val ON_TYPE_DELAY: Long = 600L //.6 second
+
     }
 
 }

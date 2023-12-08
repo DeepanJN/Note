@@ -2,8 +2,8 @@ package com.deejayen.note.ui.noteDetail
 
 import android.Manifest
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.graphics.BitmapFactory
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -11,7 +11,6 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import com.deejayen.note.R
 import com.deejayen.note.database.NoteWithDetail
@@ -20,6 +19,7 @@ import com.deejayen.note.database.entity.NoteTextDetail
 import com.deejayen.note.databinding.ActivityNoteDetailBinding
 import com.deejayen.note.ui.imagePreview.ImagePreviewActivity
 import com.deejayen.note.util.ModelUtil
+import com.deejayen.note.util.PermissionUtil
 import com.deejayen.note.util.UIUtil.Companion.setupAfterTextChangedListener
 import com.squareup.picasso.Picasso
 import dagger.android.support.DaggerAppCompatActivity
@@ -63,11 +63,29 @@ class NoteDetailActivity : DaggerAppCompatActivity() {
         }
 
     private val requestPermissionLauncher =
-        registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
-            if (isGranted) {
+        registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
+
+            val hasPermission: Boolean = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                permissions[Manifest.permission.READ_MEDIA_IMAGES]
+            } else {
+                permissions[Manifest.permission.READ_EXTERNAL_STORAGE]
+            } ?: false
+
+            if (hasPermission) {
                 openGallery()
             } else {
-                Toast.makeText(this, getString(R.string.permission_denied_go_to_settings), Toast.LENGTH_LONG).show()
+
+                val shouldShowRequestPermissionRationale: Boolean = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    shouldShowRequestPermissionRationale(Manifest.permission.READ_MEDIA_IMAGES)
+                } else {
+                    shouldShowRequestPermissionRationale(Manifest.permission.READ_EXTERNAL_STORAGE)
+                }
+
+                if (!shouldShowRequestPermissionRationale) {
+                    //Permission from settings
+                } else {
+                    // Denied
+                }
             }
         }
 
@@ -159,7 +177,7 @@ class NoteDetailActivity : DaggerAppCompatActivity() {
             }
             headingTextUpdateJob?.cancel()
             val job = lifecycleScope.launch(Dispatchers.Main) {
-                delay(noteDetailViewModel.ON_TYPE_DELAY)
+                delay(ModelUtil.ON_TYPE_DELAY)
                 Log.d(TAG, "afterTextChanged HeadingET")
                 val newText: String = editable.toString()
                 var selectedNoteWithDetail = noteDetailViewModel.selectedNoteWithDetail.value
@@ -186,7 +204,7 @@ class NoteDetailActivity : DaggerAppCompatActivity() {
             }
             contentTextUpdateJob?.cancel()
             val job = lifecycleScope.launch(Dispatchers.Main) {
-                delay(noteDetailViewModel.ON_TYPE_DELAY)
+                delay(ModelUtil.ON_TYPE_DELAY)
                 Log.d(TAG, "afterTextChanged DescriptionET")
                 val newText: String = editable.toString()
                 var selectedNoteWithDetail = noteDetailViewModel.selectedNoteWithDetail.value
@@ -215,7 +233,7 @@ class NoteDetailActivity : DaggerAppCompatActivity() {
     private fun setupOnClickListeners() {
 
         binding.noteDetailAddImageFab.setOnClickListener {
-            if (checkPermission()) {
+            if (PermissionUtil.hasReadImagesPermissions(this)) {
                 openGallery()
             } else {
                 requestPermission()
@@ -255,12 +273,9 @@ class NoteDetailActivity : DaggerAppCompatActivity() {
     }
 
 
-    private fun checkPermission(): Boolean {
-        return ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
-    }
-
     private fun requestPermission() {
-        requestPermissionLauncher.launch(Manifest.permission.READ_EXTERNAL_STORAGE)
+        //TODO: check rationale and launch
+        requestPermissionLauncher.launch(PermissionUtil.getReadImagesPermissions())
     }
 
     private fun openGallery() {
