@@ -332,31 +332,35 @@ class NoteDetailActivity : DaggerAppCompatActivity() {
         }
     }
 
-    private fun createImageView(file: File): ImageView? {
-        try {
-            val imageView = ImageView(this)
+    private suspend fun createImageView(file: File): ImageView? {
+        return withContext(Dispatchers.Main) {
+            try {
+                val imageView = ImageView(this@NoteDetailActivity)
+                val options = BitmapFactory.Options()
+                options.inJustDecodeBounds = true
+                BitmapFactory.decodeFile(file.absolutePath, options)
+                val imageWidth = options.outWidth
+                val imageHeight = options.outHeight
 
-            val options = BitmapFactory.Options()
-            options.inJustDecodeBounds = true
-            BitmapFactory.decodeFile(file.absolutePath, options)
-            val imageWidth = options.outWidth
-            val imageHeight = options.outHeight
+                val aspectRatio = imageWidth.toFloat() / imageHeight.toFloat()
+                val thumbnailHeight = resources.getDimensionPixelSize(R.dimen.image_thumbnail_size)
+                val dynamicWidth = (thumbnailHeight * aspectRatio).toInt()
 
-            val aspectRatio = imageWidth.toFloat() / imageHeight.toFloat()
-            val thumbnailHeight = resources.getDimensionPixelSize(R.dimen.image_thumbnail_size)
-            val dynamicWidth = (thumbnailHeight * aspectRatio).toInt()
+                val layoutParams = LinearLayout.LayoutParams(dynamicWidth, thumbnailHeight)
+                layoutParams.setMargins(0, 0, resources.getDimensionPixelSize(R.dimen.image_padding), 0)
+                imageView.layoutParams = layoutParams
 
-            val layoutParams = LinearLayout.LayoutParams(dynamicWidth, thumbnailHeight)
-            layoutParams.setMargins(0, 0, resources.getDimensionPixelSize(R.dimen.image_padding), 0)
-            imageView.layoutParams = layoutParams
+                picasso.load("file:$file")
+                    .resize(dynamicWidth, thumbnailHeight)
+                    .onlyScaleDown()
+                    .into(imageView)
 
-            picasso.load("file:$file").into(imageView)
-
-            return imageView
-        } catch (e: Exception) {
-            Log.e(TAG, Log.getStackTraceString(e))
+                return@withContext imageView
+            } catch (e: Exception) {
+                Log.e(TAG, Log.getStackTraceString(e))
+            }
+            return@withContext null
         }
-        return null
     }
 
     private fun setImageViewClickAction(imageView: ImageView, imageDetailId: Long) {

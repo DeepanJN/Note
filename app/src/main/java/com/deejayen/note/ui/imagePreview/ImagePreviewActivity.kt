@@ -88,9 +88,12 @@ class ImagePreviewActivity : DaggerAppCompatActivity() {
         }
     }
 
-    private fun loadPreviewImage(file: File) {
-        val imageView = binding.previewImageView
-        picasso.load("file:$file").into(imageView)
+    private suspend fun loadPreviewImage(file: File) {
+        withContext(Dispatchers.Main) {
+            val imageView = binding.previewImageView
+            picasso.load("file:$file")
+                .into(imageView)
+        }
     }
 
     private fun handleDeleteImageDetail(noteImageDetail: NoteImageDetail) {
