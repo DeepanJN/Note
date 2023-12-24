@@ -7,8 +7,11 @@ import androidx.recyclerview.widget.RecyclerView
 import com.deejayen.note.R
 import com.deejayen.note.database.entity.Note
 import com.deejayen.note.databinding.ItemNoteListBinding
+import javax.inject.Inject
+import javax.inject.Singleton
 
-class NoteListRecyclerAdapter : RecyclerView.Adapter<NoteListRecyclerAdapter.ViewHolder>() {
+@Singleton
+class NoteListRecyclerAdapter @Inject constructor() : RecyclerView.Adapter<NoteListRecyclerAdapter.ViewHolder>() {
 
     var noteList: List<Note> = emptyList()
     var callback: NoteListListener? = null

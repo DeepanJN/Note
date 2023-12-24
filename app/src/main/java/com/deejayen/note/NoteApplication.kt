@@ -1,19 +1,15 @@
 package com.deejayen.note
 
-import com.deejayen.note.di.DaggerAppComponent
+import android.app.Application
 import com.google.android.material.color.DynamicColors
-import dagger.android.AndroidInjector
-import dagger.android.DaggerApplication
+import dagger.hilt.android.HiltAndroidApp
 
-class NoteApplication : DaggerApplication() {
+@HiltAndroidApp
+class NoteApplication : Application() {
 
     override fun onCreate() {
         super.onCreate()
         DynamicColors.applyToActivitiesIfAvailable(this)
-    }
-
-    override fun applicationInjector(): AndroidInjector<NoteApplication>? {
-        return DaggerAppComponent.builder().create(this)
     }
 
 }

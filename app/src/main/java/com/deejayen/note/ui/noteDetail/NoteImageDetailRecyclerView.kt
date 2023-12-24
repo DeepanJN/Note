@@ -7,10 +7,12 @@ import com.deejayen.note.database.entity.Note
 import com.deejayen.note.database.entity.NoteImageDetail
 import com.deejayen.note.databinding.ItemImageDetailBinding
 import com.squareup.picasso.Picasso
+import javax.inject.Inject
+import javax.inject.Singleton
 
 
-
-class NoteImageDetailRecyclerAdapter(private val picasso: Picasso) : RecyclerView.Adapter<NoteImageDetailRecyclerAdapter.ViewHolder>() {
+@Singleton
+class NoteImageDetailRecyclerAdapter @Inject constructor(private val picasso: Picasso) : RecyclerView.Adapter<NoteImageDetailRecyclerAdapter.ViewHolder>() {
 
     var noteImageDetailList: List<NoteImageDetail> = emptyList()
     var callback: NoteImageDetailListener? = null

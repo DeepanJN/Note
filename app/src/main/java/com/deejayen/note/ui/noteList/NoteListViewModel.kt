@@ -4,8 +4,11 @@ import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.ViewModel
 import com.deejayen.note.database.entity.Note
 import com.deejayen.note.repository.NoteRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 
-class NoteListViewModel(private val noteRepository: NoteRepository) : ViewModel() {
+@HiltViewModel
+class NoteListViewModel @Inject constructor(private val noteRepository: NoteRepository) : ViewModel() {
 
     val notesList: MediatorLiveData<List<Note>> = MediatorLiveData()
 

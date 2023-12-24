@@ -1,6 +1,5 @@
 package com.deejayen.note.di
 
-import android.app.Application
 import android.content.Context
 import androidx.room.Room
 import com.deejayen.note.NoteApplication
@@ -10,19 +9,22 @@ import com.deejayen.note.database.dao.NoteDao
 import com.squareup.picasso.Picasso
 import dagger.Module
 import dagger.Provides
+import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
+import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 
-
 @Module
-class AppModule {
+@InstallIn(SingletonComponent::class)
+object AppModule {
 
     @Provides
     @Singleton
-    fun provideContext(noteApplication: NoteApplication): Context = noteApplication.applicationContext
+    fun provideContext(@ApplicationContext noteApplication: NoteApplication): Context = noteApplication.applicationContext
 
     @Provides
     @Singleton
-    fun provideNoteDatabase(context: Context): NoteDatabase {
+    fun provideNoteDatabase(@ApplicationContext context: Context): NoteDatabase {
         return Room.databaseBuilder(
             context,
             NoteDatabase::class.java,
@@ -38,7 +40,7 @@ class AppModule {
 
     @Provides
     @Singleton
-    fun providePicasso(context: Context): Picasso {
+    fun providePicasso(@ApplicationContext context: Context): Picasso {
         return Picasso.Builder(context).build()
     }
 

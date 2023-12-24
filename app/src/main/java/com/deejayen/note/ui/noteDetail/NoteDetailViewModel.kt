@@ -8,11 +8,14 @@ import com.deejayen.note.database.NoteWithDetail
 import com.deejayen.note.database.entity.Note
 import com.deejayen.note.database.entity.NoteImageDetail
 import com.deejayen.note.repository.NoteRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import javax.inject.Inject
 
-class NoteDetailViewModel(private val noteRepository: NoteRepository) : ViewModel() {
+@HiltViewModel
+class NoteDetailViewModel @Inject constructor(private val noteRepository: NoteRepository) : ViewModel() {
 
     var noteId = 0L
     private var _selectedNoteWithDetail = MutableLiveData<NoteWithDetail>()

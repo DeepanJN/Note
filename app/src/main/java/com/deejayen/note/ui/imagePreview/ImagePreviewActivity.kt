@@ -2,6 +2,8 @@ package com.deejayen.note.ui.imagePreview
 
 import android.os.Bundle
 import android.util.Log
+import androidx.activity.viewModels
+import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.deejayen.note.R
 import com.deejayen.note.database.entity.NoteImageDetail
@@ -9,20 +11,20 @@ import com.deejayen.note.databinding.ActivityImagePreviewBinding
 import com.deejayen.note.util.ModelUtil
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.squareup.picasso.Picasso
-import dagger.android.support.DaggerAppCompatActivity
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
 import javax.inject.Inject
 
-class ImagePreviewActivity : DaggerAppCompatActivity() {
+@AndroidEntryPoint
+class ImagePreviewActivity : AppCompatActivity() {
 
     @Inject
     lateinit var picasso: Picasso
 
-    @Inject
-    lateinit var imagePreviewViewModel: ImagePreviewViewModel
+    private val imagePreviewViewModel: ImagePreviewViewModel by viewModels()
 
     private lateinit var binding: ActivityImagePreviewBinding
 

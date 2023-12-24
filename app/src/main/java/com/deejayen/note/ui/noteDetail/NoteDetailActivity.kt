@@ -11,6 +11,7 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.deejayen.note.R
 import com.deejayen.note.database.NoteWithDetail
@@ -22,7 +23,7 @@ import com.deejayen.note.util.ModelUtil
 import com.deejayen.note.util.PermissionUtil
 import com.deejayen.note.util.UIUtil.Companion.setupAfterTextChangedListener
 import com.squareup.picasso.Picasso
-import dagger.android.support.DaggerAppCompatActivity
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -30,15 +31,16 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileOutputStream
+import androidx.activity.viewModels
 import javax.inject.Inject
 
-class NoteDetailActivity : DaggerAppCompatActivity() {
+@AndroidEntryPoint
+class NoteDetailActivity : AppCompatActivity() {
 
     @Inject
     lateinit var picasso: Picasso
 
-    @Inject
-    lateinit var noteDetailViewModel: NoteDetailViewModel
+    val noteDetailViewModel: NoteDetailViewModel by viewModels()
 
     private var headingTextUpdateJob: Job? = null
     private var contentTextUpdateJob: Job? = null
